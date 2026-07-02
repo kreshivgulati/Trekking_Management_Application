@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Login | Trek Management{% endblock %}
+
+{% block body %}
+<main class="login-screen">
+    <section class="login-panel">
+        <div class="brand-block">
+            <span class="brand-mark">TM</span>
+            <div>
+                <p class="eyebrow">Trekking Management</p>
+                <h1>Sign in to manage your trek world.</h1>
+            </div>
+        </div>
+
+        <div class="login-grid">
+            <div class="login-copy">
+                <p class="lead">
+                    Admins, trek staff, and trekkers can access their workspace from one secure login.
+                </p>
+                <dl>
+                    <div>
+                        <dt>Admin</dt>
+                        <dd>Create treks, approve staff, assign guides, and review bookings.</dd>
+                    </div>
+                    <div>
+                        <dt>Staff</dt>
+                        <dd>Manage assigned treks, slots, statuses, and participant lists.</dd>
+                    </div>
+                    <div>
+                        <dt>User</dt>
+                        <dd>Find open treks, book adventures, and view trekking history.</dd>
+                    </div>
+                </dl>
+            </div>
+
+            <div class="auth-card">
+                <h2>Login</h2>
+                <p class="admin-hint">Demo admin: admin@trek.local / admin123</p>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="flash-stack">
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} mb-2" role="alert">{{ message }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                <form method="post" action="{{ url_for('login') }}">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email address</label>
+                        <input class="form-control" type="email" id="email" name="email" placeholder="name@example.com" required autofocus>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input class="form-control" type="password" id="password" name="password" placeholder="Enter password" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="role" class="form-label">Login as</label>
+                        <select class="form-select" id="role" name="role" required>
+                            <option value="" selected disabled>Select role</option>
+                            <option value="admin">Admin</option>
+                            <option value="staff">Trek Staff</option>
+                            <option value="user">User / Trekker</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-success w-100" type="submit">Sign in</button>
+                </form>
+
+                <p class="register-note">
+                    New staff or trekker? Registration will be added next.
+                </p>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}

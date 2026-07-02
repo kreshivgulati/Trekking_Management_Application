@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | Trek Management{% endblock %}
+
+{% block body %}
+<main class="dashboard-screen">
+    <section class="dashboard-panel">
+        <p class="eyebrow">{{ session.role|title }} Dashboard</p>
+        <h1>Welcome, {{ session.user_name }}.</h1>
+        <p class="lead">Login is working. The role-specific dashboard can be built from here.</p>
+        <a class="btn btn-outline-success" href="{{ url_for('logout') }}">Logout</a>
+    </section>
+</main>
+{% endblock %}
