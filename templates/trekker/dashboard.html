@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}My Dashboard{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Trekker Dashboard</h2>
+
+<div class="row">
+    <div class="col-md-7">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">Open Treks</div>
+            <div class="card-body">
+                {% if open_treks %}
+                <table class="table table-sm align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Trek</th>
+                            <th>Location</th>
+                            <th>Difficulty</th>
+                            <th>Slots</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for trek in open_treks %}
+                        <tr>
+                            <td>{{ trek.name }}</td>
+                            <td>{{ trek.location }}</td>
+                            <td>{{ trek.difficulty.value }}</td>
+                            <td>{{ trek.available_slots }}</td>
+                            <td class="text-end">
+                                <form method="POST" action="{{ url_for('trekker.book_trek', trek_id=trek.id) }}">
+                                    <button type="submit" class="btn btn-sm btn-primary" {% if trek.available_slots <=0
+                                        %}disabled{% endif %}>
+                                        Book
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted mb-0">No open treks right now.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-5">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">My Bookings</div>
+            <div class="card-body">
+                {% if my_bookings %}
+                <table class="table table-sm align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Trek</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in my_bookings %}
+                        <tr>
+                            <td>{{ booking.trek.name }}</td>
+                            <td><span class="badge bg-secondary">{{ booking.status.value }}</span></td>
+                            <td class="text-end">
+                                {% if booking.status.value == 'Booked' %}
+                                <form method="POST"
+                                    action="{{ url_for('trekker.cancel_booking', booking_id=booking.id) }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted mb-0">You haven't booked any treks yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
