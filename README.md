@@ -25,4 +25,4 @@ On the first run, the application automatically:
 Default Admin Credentials:
 
 - Email: `admin@trekapp.com`
-- Password: `ChangeMe123!`
+- Password: `12345678`
