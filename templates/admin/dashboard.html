@@ -1,80 +1,301 @@
 {% extends "base.html" %}
-{% block title %}Admin Dashboard{% endblock %}
+{% block title %}Admin Dashboard | Trek Management{% endblock %}
 
 {% block content %}
-<h2 class="mb-4">Admin Dashboard</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-0 text-success">Admin Control Center</h2>
+        <p class="text-muted mb-0">Overview of system treks, bookings, users, and staff registration approvals.</p>
+    </div>
+    <span class="badge bg-success px-3 py-2 fs-7 d-flex align-items-center">
+        <i class="bi bi-shield-check me-1 fs-6"></i> System Admin
+    </span>
+</div>
 
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card text-center shadow-sm">
-            <div class="card-body">
-                <h6 class="text-muted">Total Treks</h6>
-                <h2>{{ total_treks }}</h2>
+<!-- Stats Widgets -->
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="card border-0 shadow-sm rounded-4 h-100 p-2 position-relative overflow-hidden" style="background: linear-gradient(135deg, #1f6f50, #123f31);">
+            <div class="card-body text-white">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-white-50 fw-semibold">Total Treks</span>
+                    <div class="bg-white bg-opacity-20 rounded-3 p-2 d-inline-flex">
+                        <i class="bi bi-signpost-split fs-4 text-white"></i>
+                    </div>
+                </div>
+                <h2 class="fw-bold mb-1 display-6">{{ total_treks }}</h2>
+                <a href="{{ url_for('admin.manage_treks') }}" class="text-white-50 small text-decoration-none d-flex align-items-center">
+                    Manage treks <i class="bi bi-arrow-right-short ms-1 fs-5"></i>
+                </a>
+            </div>
+            <div class="position-absolute bottom-0 end-0 opacity-10 translate-middle-y me-n3" style="font-size: 8rem; line-height: 1;">
+                <i class="bi bi-signpost-split"></i>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-center shadow-sm">
+    
+    <div class="col-sm-6 col-xl-3">
+        <div class="card border-0 shadow-sm rounded-4 h-100 p-2 position-relative overflow-hidden bg-white">
             <div class="card-body">
-                <h6 class="text-muted">Total Users</h6>
-                <h2>{{ total_users }}</h2>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted fw-semibold">Total Bookings</span>
+                    <div class="bg-primary bg-opacity-10 rounded-3 p-2 d-inline-flex">
+                        <i class="bi bi-journal-text fs-4 text-primary"></i>
+                    </div>
+                </div>
+                <h2 class="fw-bold mb-1 display-6 text-dark">{{ total_bookings }}</h2>
+                <a href="{{ url_for('admin.view_bookings') }}" class="text-primary small text-decoration-none d-flex align-items-center fw-medium">
+                    View bookings <i class="bi bi-arrow-right-short ms-1 fs-5"></i>
+                </a>
+            </div>
+            <div class="position-absolute bottom-0 end-0 text-primary opacity-5 translate-middle-y me-n3" style="font-size: 8rem; line-height: 1;">
+                <i class="bi bi-journal-text"></i>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-center shadow-sm">
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card border-0 shadow-sm rounded-4 h-100 p-2 position-relative overflow-hidden bg-white">
             <div class="card-body">
-                <h6 class="text-muted">Total Staff</h6>
-                <h2>{{ total_staff }}</h2>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted fw-semibold">Total Staff</span>
+                    <div class="bg-info bg-opacity-10 rounded-3 p-2 d-inline-flex">
+                        <i class="bi bi-people fs-4 text-info"></i>
+                    </div>
+                </div>
+                <h2 class="fw-bold mb-1 display-6 text-dark">{{ total_staff }}</h2>
+                <a href="{{ url_for('admin.manage_users') }}?role=staff" class="text-info small text-decoration-none d-flex align-items-center fw-medium">
+                    Manage staff <i class="bi bi-arrow-right-short ms-1 fs-5"></i>
+                </a>
+            </div>
+            <div class="position-absolute bottom-0 end-0 text-info opacity-5 translate-middle-y me-n3" style="font-size: 8rem; line-height: 1;">
+                <i class="bi bi-people"></i>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-center shadow-sm">
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card border-0 shadow-sm rounded-4 h-100 p-2 position-relative overflow-hidden bg-white">
             <div class="card-body">
-                <h6 class="text-muted">Total Bookings</h6>
-                <h2>{{ total_bookings }}</h2>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted fw-semibold">Trekkers (Users)</span>
+                    <div class="bg-warning bg-opacity-10 rounded-3 p-2 d-inline-flex">
+                        <i class="bi bi-person-walking fs-4 text-warning"></i>
+                    </div>
+                </div>
+                <h2 class="fw-bold mb-1 display-6 text-dark">{{ total_users }}</h2>
+                <a href="{{ url_for('admin.manage_users') }}?role=trekker" class="text-warning small text-decoration-none d-flex align-items-center fw-medium">
+                    Manage trekkers <i class="bi bi-arrow-right-short ms-1 fs-5"></i>
+                </a>
+            </div>
+            <div class="position-absolute bottom-0 end-0 text-warning opacity-5 translate-middle-y me-n3" style="font-size: 8rem; line-height: 1;">
+                <i class="bi bi-person-walking"></i>
             </div>
         </div>
     </div>
 </div>
 
-<div class="card shadow-sm">
-    <div class="card-header">Staff Pending Approval</div>
-    <div class="card-body">
-        {% if pending_staff %}
-        <table class="table table-sm align-middle mb-0">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for staff in pending_staff %}
-                <tr>
-                    <td>{{ staff.name }}</td>
-                    <td>{{ staff.email }}</td>
-                    <td>{{ staff.phone or '-' }}</td>
-                    <td class="text-end">
-                        <form method="POST" action="{{ url_for('admin.approve_staff', user_id=staff.id) }}"
-                            class="d-inline">
-                            <button type="submit" class="btn btn-sm btn-success">Approve</button>
-                        </form>
-                        <form method="POST" action="{{ url_for('admin.blacklist_user', user_id=staff.id) }}"
-                            class="d-inline">
-                            <button type="submit" class="btn btn-sm btn-outline-danger">Blacklist</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <p class="text-muted mb-0">No pending staff approvals.</p>
-        {% endif %}
+<div class="row g-4">
+    <!-- Pending Approvals -->
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-white border-bottom py-3 d-flex align-items-center justify-content-between">
+                <h5 class="card-title fw-bold mb-0 text-success d-flex align-items-center">
+                    <i class="bi bi-person-check-fill me-2 fs-5"></i>
+                    Pending Staff Approvals
+                </h5>
+                <span class="badge bg-danger rounded-pill">{{ pending_staff|length }} Pending</span>
+            </div>
+            <div class="card-body p-0">
+                {% if pending_staff %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="px-4">Staff ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th class="text-end px-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for staff in pending_staff %}
+                            <tr>
+                                <td class="px-4 fw-semibold text-muted">#{{ staff.id }}</td>
+                                <td>
+                                    <div class="fw-semibold text-dark">{{ staff.name }}</div>
+                                </td>
+                                <td>{{ staff.email }}</td>
+                                <td>{{ staff.phone or '-' }}</td>
+                                <td class="text-end px-4">
+                                    <form method="POST" action="{{ url_for('admin.approve_staff', user_id=staff.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-success rounded-3 px-3 py-1 fw-semibold me-1 shadow-sm d-inline-flex align-items-center">
+                                            <i class="bi bi-check-circle me-1"></i> Approve
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="{{ url_for('admin.blacklist_user', user_id=staff.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-3 px-3 py-1 fw-semibold d-inline-flex align-items-center">
+                                            <i class="bi bi-x-circle me-1"></i> Blacklist
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-patch-check fs-1 text-success opacity-50 mb-3 d-block"></i>
+                    <p class="mb-0 fw-semibold">All staff requests are approved and up to date!</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Links & Actions -->
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-white border-bottom py-3">
+                <h5 class="card-title fw-bold mb-0 text-success d-flex align-items-center">
+                    <i class="bi bi-grid-fill me-2 fs-5"></i>
+                    Admin Quick Panels
+                </h5>
+            </div>
+            <div class="card-body py-4">
+                <div class="d-grid gap-3">
+                    <a href="{{ url_for('admin.manage_treks') }}" class="btn btn-outline-success text-start rounded-3 p-3 shadow-sm d-flex justify-content-between align-items-center hover-shadow transition">
+                        <div>
+                            <div class="fw-bold"><i class="bi bi-plus-circle-fill me-2 text-success"></i> Create &amp; Manage Treks</div>
+                            <small class="text-muted">Register routes, edit difficulties, dates, and assign guides.</small>
+                        </div>
+                        <i class="bi bi-chevron-right text-success fs-5"></i>
+                    </a>
+                    
+                    <a href="{{ url_for('admin.manage_users') }}" class="btn btn-outline-success text-start rounded-3 p-3 shadow-sm d-flex justify-content-between align-items-center hover-shadow transition">
+                        <div>
+                            <div class="fw-bold"><i class="bi bi-shield-slash-fill me-2 text-success"></i> User &amp; Guide Management</div>
+                            <small class="text-muted">Search through accounts, blacklist offenders, approve guides.</small>
+                        </div>
+                        <i class="bi bi-chevron-right text-success fs-5"></i>
+                    </a>
+                    
+                    <a href="{{ url_for('admin.view_bookings') }}" class="btn btn-outline-success text-start rounded-3 p-3 shadow-sm d-flex justify-content-between align-items-center hover-shadow transition">
+                        <div>
+                            <div class="fw-bold"><i class="bi bi-clock-history me-2 text-success"></i> Comprehensive Booking logs</div>
+                            <small class="text-muted">Track historical logs, cancelled items, and open registrations.</small>
+                        </div>
+                        <i class="bi bi-chevron-right text-success fs-5"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<!-- Charts Section -->
+<div class="row g-4 mt-2 mb-4">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white border-bottom py-3">
+                <h6 class="card-title fw-bold mb-0 text-success d-flex align-items-center">
+                    <i class="bi bi-bar-chart-fill me-2"></i> Booking Distribution
+                </h6>
+            </div>
+            <div class="card-body d-flex justify-content-center align-items-center" style="min-height: 320px;">
+                <canvas id="bookingsChart" style="max-height: 280px; width: 100%;"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white border-bottom py-3">
+                <h6 class="card-title fw-bold mb-0 text-success d-flex align-items-center">
+                    <i class="bi bi-pie-chart-fill me-2"></i> Trek Difficulty Distribution
+                </h6>
+            </div>
+            <div class="card-body d-flex justify-content-center align-items-center" style="min-height: 320px;">
+                <canvas id="difficultyChart" style="max-height: 280px; width: 100%;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Bookings Chart (Bar)
+        const bookingsCtx = document.getElementById('bookingsChart').getContext('2d');
+        new Chart(bookingsCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Booked', 'Cancelled', 'Completed'],
+                datasets: [{
+                    label: 'Bookings Count',
+                    data: [{{ booked_count }}, {{ cancelled_count }}, {{ completed_count }}],
+                    backgroundColor: [
+                        'rgba(31, 111, 80, 0.75)', // Forest Green
+                        'rgba(220, 53, 69, 0.75)',  // Red
+                        'rgba(13, 202, 240, 0.75)'  // Cyan/Info
+                    ],
+                    borderColor: [
+                        '#1f6f50',
+                        '#dc3545',
+                        '#0dcaf0'
+                    ],
+                    borderWidth: 1.5,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 }
+                    }
+                }
+            }
+        });
+
+        // Difficulty Chart (Doughnut)
+        const difficultyCtx = document.getElementById('difficultyChart').getContext('2d');
+        new Chart(difficultyCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Easy', 'Moderate', 'Hard'],
+                datasets: [{
+                    data: [{{ easy_count }}, {{ moderate_count }}, {{ hard_count }}],
+                    backgroundColor: [
+                        'rgba(25, 135, 84, 0.75)',  // Easy Success Green
+                        'rgba(255, 193, 7, 0.75)',  // Moderate Warning Yellow
+                        'rgba(220, 53, 69, 0.75)'   // Hard Danger Red
+                    ],
+                    borderColor: [
+                        '#198754',
+                        '#ffc107',
+                        '#dc3545'
+                    ],
+                    borderWidth: 1.5
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                },
+                cutout: '60%'
+            }
+        });
+    });
+</script>
 {% endblock %}

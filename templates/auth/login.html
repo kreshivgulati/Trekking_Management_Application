@@ -2,31 +2,256 @@
 {% block title %}Login - Trek Management{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-5">
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-                <h3 class="card-title mb-4 text-center">Login</h3>
+<style>
+    .auth-wrap {
+        min-height: calc(100vh - 220px);
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        justify-content: center;
+        gap: 1.25rem;
+    }
 
-                <form method="POST" action="{{ url_for('auth.login') }}">
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" name="email" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">Login</button>
-                </form>
+    /* Go Back button (adapted from Uiverse.io by AKAspidey01) */
+    .go-back-btn {
+        background: #fff;
+        width: 12rem;
+        height: 3.5rem;
+        border-radius: 1rem;
+        position: relative;
+        color: var(--pine);
+        font-size: 1.05rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        overflow: hidden;
+        align-self: flex-start;
+        box-shadow: 0 2px 10px rgba(27, 67, 50, 0.08);
+        text-decoration: none;
+        display: block;
+    }
 
-                <hr>
-                <p class="text-center mb-1">New here?</p>
-                <div class="d-flex gap-2">
-                    <a href="{{ url_for('auth.register_trekker') }}" class="btn btn-outline-secondary w-50">Register as
-                        Trekker</a>
-                    <a href="{{ url_for('auth.register_staff') }}" class="btn btn-outline-secondary w-50">Register as
-                        Staff</a>
+    .go-back-circle {
+        background: var(--moss-light);
+        border-radius: 0.75rem;
+        height: 3rem;
+        width: 25%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        left: 4px;
+        top: 4px;
+        z-index: 1;
+        transition: width .5s ease;
+    }
+
+    .go-back-btn:hover .go-back-circle {
+        width: 184px;
+    }
+
+    .go-back-text {
+        position: relative;
+        z-index: 0;
+        display: block;
+        text-align: center;
+        line-height: 3.5rem;
+        transform: translateX(0.5rem);
+        color: var(--pine);
+    }
+
+    .go-back-circle svg path {
+        fill: var(--pine);
+    }
+
+    .auth-card {
+        border: none;
+        border-radius: 1.25rem;
+        overflow: hidden;
+        box-shadow: 0 4px 24px rgba(27, 67, 50, 0.08);
+        width: 100%;
+    }
+
+    .auth-banner {
+        background: linear-gradient(135deg, var(--pine) 0%, var(--pine-dark) 100%);
+        padding: 2rem 2rem 1.5rem;
+        text-align: center;
+        color: var(--sand);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .auth-banner::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: repeating-linear-gradient(120deg, transparent 0 24px, rgba(255, 255, 255, 0.05) 24px 26px);
+    }
+
+    .auth-banner i {
+        font-size: 2rem;
+        color: var(--moss-light);
+        position: relative;
+    }
+
+    .auth-banner h3 {
+        font-weight: 700;
+        color: #fff;
+        margin: 0.5rem 0 0;
+        position: relative;
+    }
+
+    .auth-banner p {
+        color: rgba(254, 250, 224, 0.75);
+        font-size: 0.85rem;
+        margin: 0.25rem 0 0;
+        position: relative;
+    }
+
+    .auth-body {
+        padding: 2rem;
+        background: #fff;
+    }
+
+    .auth-body .form-label {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--pine);
+    }
+
+    .auth-body .input-group-text {
+        background: var(--mist);
+        border: 1px solid #E4E4D8;
+        border-right: none;
+        color: var(--stone);
+    }
+
+    .auth-body .form-control {
+        border: 1px solid #E4E4D8;
+        border-left: none;
+        padding: 0.6rem 0.9rem;
+    }
+
+    .auth-body .input-group:focus-within .input-group-text,
+    .auth-body .input-group:focus-within .form-control {
+        border-color: var(--moss);
+    }
+
+    .auth-body .form-control:focus {
+        box-shadow: none;
+    }
+
+    .auth-body .input-group:focus-within {
+        box-shadow: 0 0 0 3px rgba(64, 145, 108, 0.15);
+        border-radius: 0.6rem;
+    }
+
+    .btn-login {
+        background: var(--moss);
+        border: none;
+        color: #fff;
+        font-weight: 600;
+        border-radius: 0.7rem;
+        padding: 0.65rem;
+        transition: background .15s ease, transform .15s ease;
+    }
+
+    .btn-login:hover {
+        background: var(--pine);
+        color: #fff;
+        transform: translateY(-1px);
+    }
+
+    .auth-divider {
+        display: flex;
+        align-items: center;
+        color: var(--stone);
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin: 1.5rem 0 1rem;
+    }
+
+    .auth-divider::before,
+    .auth-divider::after {
+        content: "";
+        flex: 1;
+        border-bottom: 1px solid #E4E4D8;
+    }
+
+    .auth-divider span {
+        padding: 0 0.75rem;
+    }
+
+    .btn-register {
+        border: 1.5px solid var(--moss);
+        color: var(--moss);
+        border-radius: 0.7rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        padding: 0.6rem;
+        background: transparent;
+        transition: background .15s ease, color .15s ease;
+    }
+
+    .btn-register:hover {
+        background: var(--moss);
+        color: #fff;
+    }
+
+    .btn-register.terracotta {
+        border-color: var(--terracotta);
+        color: var(--terracotta);
+    }
+
+    .btn-register.terracotta:hover {
+        background: var(--terracotta);
+        color: #fff;
+    }
+</style>
+
+<div class="auth-wrap">
+    <div class="row justify-content-center w-100">
+        <div class="col-md-5 col-lg-4">
+
+            <div class="card auth-card">
+                <div class="auth-banner">
+                    <i class="bi bi-compass-fill"></i>
+                    <h3>Welcome Back</h3>
+                    <p>Sign in to continue your trekking journey</p>
+                </div>
+
+                <div class="auth-body">
+                    <form method="POST" action="{{ url_for('auth.login') }}">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-login w-100 mt-2">
+                            <i class="bi bi-box-arrow-in-right me-1"></i>Login
+                        </button>
+                    </form>
+
+                    <div class="auth-divider"><span>New here?</span></div>
+
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('auth.register_trekker') }}" class="btn btn-register w-50">
+                            <i class="bi bi-person-walking me-1"></i>Trekker
+                        </a>
+                        <a href="{{ url_for('auth.register_staff') }}" class="btn btn-register terracotta w-50">
+                            <i class="bi bi-person-badge me-1"></i>Staff
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

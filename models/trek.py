@@ -39,7 +39,15 @@ class Trek(db.Model):
     )
 
     def has_available_slot(self):
-        return self.status == TrekStatusEnum.OPEN and self.available_slots > 0
+        return self.status in (TrekStatusEnum.APPROVED, TrekStatusEnum.OPEN) and self.available_slots > 0
+
+    def update_status(self, new_status):
+        from models.enums import TrekStatusEnum, BookingStatusEnum
+        self.status = new_status
+        if new_status == TrekStatusEnum.COMPLETED:
+            for booking in self.bookings:
+                if booking.status == BookingStatusEnum.BOOKED:
+                    booking.status = BookingStatusEnum.COMPLETED
 
     def __repr__(self):
         return f"<Trek {self.id} {self.name} status={self.status.value}>"

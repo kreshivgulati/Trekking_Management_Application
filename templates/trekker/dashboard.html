@@ -1,84 +1,475 @@
 {% extends "base.html" %}
-{% block title %}My Dashboard{% endblock %}
+{% block title %}Explore Treks | Trekker Dashboard{% endblock %}
 
 {% block content %}
-<h2 class="mb-4">Trekker Dashboard</h2>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap');
 
-<div class="row">
-    <div class="col-md-7">
-        <div class="card shadow-sm mb-4">
-            <div class="card-header">Open Treks</div>
-            <div class="card-body">
-                {% if open_treks %}
-                <table class="table table-sm align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <th>Trek</th>
-                            <th>Location</th>
-                            <th>Difficulty</th>
-                            <th>Slots</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for trek in open_treks %}
-                        <tr>
-                            <td>{{ trek.name }}</td>
-                            <td>{{ trek.location }}</td>
-                            <td>{{ trek.difficulty.value }}</td>
-                            <td>{{ trek.available_slots }}</td>
-                            <td class="text-end">
-                                <form method="POST" action="{{ url_for('trekker.book_trek', trek_id=trek.id) }}">
-                                    <button type="submit" class="btn btn-sm btn-primary" {% if trek.available_slots <=0
-                                        %}disabled{% endif %}>
-                                        Book
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                <p class="text-muted mb-0">No open treks right now.</p>
-                {% endif %}
-            </div>
-        </div>
+    .trek-explore {
+        --pine: #1B4332;
+        --moss: #40916C;
+        --moss-light: #74C69D;
+        --terracotta: #BC6C25;
+        --terracotta-light: #E8A868;
+        --sand: #FEFAE0;
+        --stone: #6B705C;
+        --rust: #9B2226;
+        font-family: 'Inter', sans-serif;
+        color: var(--pine);
+    }
+
+    .trek-explore h2,
+    .trek-explore h5,
+    .trek-explore .card-title {
+        font-family: 'Poppins', sans-serif;
+    }
+
+    /* Page header */
+    .trek-header {
+        background: linear-gradient(135deg, var(--pine) 0%, #2D6A4F 100%);
+        border-radius: 1.25rem;
+        padding: 1.75rem 2rem;
+        color: var(--sand);
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 1.75rem;
+    }
+
+    .trek-header::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+            repeating-linear-gradient(120deg, transparent 0 24px, rgba(255, 255, 255, 0.05) 24px 26px);
+        pointer-events: none;
+    }
+
+    .trek-header h2 {
+        color: #fff;
+        font-weight: 800;
+    }
+
+    .trek-header p {
+        color: rgba(254, 250, 224, 0.85);
+    }
+
+    /* Cards */
+    .trek-card {
+        border: none;
+        border-radius: 1.25rem;
+        background: #fff;
+        box-shadow: 0 2px 10px rgba(27, 67, 50, 0.06);
+        transition: box-shadow .2s ease;
+    }
+
+    .trek-card:hover {
+        box-shadow: 0 6px 20px rgba(27, 67, 50, 0.10);
+    }
+
+    .trek-card .card-header {
+        background: #fff;
+        border-bottom: 1px solid #EDEDE4;
+        padding: 1rem 1.25rem;
+    }
+
+    .trek-card .card-title {
+        color: var(--pine);
+        font-weight: 700;
+    }
+
+    /* Search bar */
+    .search-bar {
+        background: var(--sand);
+        border-radius: 1rem;
+        padding: 0.9rem 1.1rem;
+    }
+
+    .search-bar .form-control,
+    .search-bar .form-select {
+        background: #fff;
+        border: 1px solid #E4DFC8;
+        border-radius: 0.75rem !important;
+    }
+
+    .search-bar .form-control:focus,
+    .search-bar .form-select:focus {
+        border-color: var(--moss);
+        box-shadow: 0 0 0 3px rgba(64, 145, 108, 0.15);
+    }
+
+    .btn-trail {
+        background: var(--moss);
+        color: #fff;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        border: none;
+        transition: transform .15s ease, background .15s ease;
+    }
+
+    .btn-trail:hover {
+        background: var(--pine);
+        color: #fff;
+        transform: translateY(-1px);
+    }
+
+    /* Table */
+    .trek-table thead th {
+        background: var(--sand);
+        color: var(--stone);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        border: none;
+        font-weight: 600;
+    }
+
+    .trek-table tbody tr {
+        transition: background .15s ease;
+    }
+
+    .trek-table tbody tr:hover {
+        background: #FBFAF2;
+    }
+
+    .trek-table td {
+        border-color: #F1EFE4;
+        vertical-align: middle;
+    }
+
+    .trek-name {
+        font-weight: 700;
+        color: var(--pine);
+    }
+
+    .trek-location {
+        color: var(--stone);
+        font-size: 0.8rem;
+    }
+
+    /* Peak-icon difficulty indicator */
+    .peak-rating {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .peak-rating .peaks {
+        display: inline-flex;
+        gap: 1px;
+    }
+
+    .peak-easy {
+        color: var(--moss);
+    }
+
+    .peak-moderate {
+        color: var(--terracotta);
+    }
+
+    .peak-difficult {
+        color: var(--rust);
+    }
+
+    .peak-dim {
+        color: #DDD;
+    }
+
+    /* Slot availability bar */
+    .slot-bar-track {
+        width: 70px;
+        height: 6px;
+        border-radius: 3px;
+        background: #EEEBDD;
+        overflow: hidden;
+        margin-top: 4px;
+    }
+
+    .slot-bar-fill {
+        height: 100%;
+        border-radius: 3px;
+        background: var(--moss);
+    }
+
+    .slot-bar-fill.low {
+        background: var(--terracotta);
+    }
+
+    .btn-book {
+        background: var(--terracotta);
+        color: #fff;
+        border: none;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        transition: transform .15s ease, background .15s ease;
+    }
+
+    .btn-book:hover:not(:disabled) {
+        background: #A45A1A;
+        color: #fff;
+        transform: translateY(-1px);
+    }
+
+    .btn-book:disabled {
+        background: #E4DFC8;
+        color: var(--stone);
+    }
+
+    /* Sidebar booking cards */
+    .booking-item {
+        border: 1px solid #EDEDE4;
+        border-left: 4px solid var(--moss);
+        border-radius: 0.75rem;
+        background: #FBFAF2;
+        padding: 0.9rem 1rem;
+    }
+
+    .booking-status {
+        background: rgba(64, 145, 108, 0.12);
+        color: var(--moss);
+        font-weight: 600;
+        font-size: 0.75rem;
+    }
+
+    .btn-cancel {
+        border: 1px solid var(--rust);
+        color: var(--rust);
+        border-radius: 0.6rem;
+        font-size: 0.78rem;
+        background: transparent;
+    }
+
+    .btn-cancel:hover {
+        background: var(--rust);
+        color: #fff;
+    }
+
+    .history-row {
+        border-bottom: 1px solid #F1EFE4;
+        padding: 0.6rem 0;
+    }
+
+    .history-row:last-child {
+        border-bottom: none;
+    }
+
+    .status-completed {
+        background: rgba(64, 145, 108, 0.12);
+        color: var(--moss);
+    }
+
+    .status-other {
+        background: #F1EFE4;
+        color: var(--stone);
+    }
+
+    .empty-state {
+        color: var(--stone);
+    }
+
+    .empty-state i {
+        color: var(--moss);
+        opacity: 0.4;
+    }
+</style>
+
+<div class="trek-explore">
+
+    <!-- Header -->
+    <div class="trek-header">
+        <h2 class="mb-1"><i class="bi bi-compass me-2"></i>Explore Trekking Adventures</h2>
+        <p class="mb-0">Browse available treks, check difficulty, book your next journey, and revisit past trips.</p>
     </div>
 
-    <div class="col-md-5">
-        <div class="card shadow-sm mb-4">
-            <div class="card-header">My Bookings</div>
-            <div class="card-body">
-                {% if my_bookings %}
-                <table class="table table-sm align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <th>Trek</th>
-                            <th>Status</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for booking in my_bookings %}
-                        <tr>
-                            <td>{{ booking.trek.name }}</td>
-                            <td><span class="badge bg-secondary">{{ booking.status.value }}</span></td>
-                            <td class="text-end">
-                                {% if booking.status.value == 'Booked' %}
+    <!-- Search and Filter Bar -->
+    <div class="search-bar mb-4">
+        <form method="GET" action="{{ url_for('trekker.dashboard') }}" class="row g-2 align-items-center">
+            <div class="col-md-5 col-lg-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" value="{{ search_query }}" class="form-control border-start-0 ps-0"
+                        placeholder="Search by trek name or location...">
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-funnel"></i></span>
+                    <select name="difficulty" class="form-select border-start-0 ps-0">
+                        <option value="">-- All Difficulties --</option>
+                        {% for diff in difficulties %}
+                        <option value="{{ diff.value }}" {% if difficulty_filter==diff.value %}selected{% endif %}>{{
+                            diff.value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3 col-lg-2 d-flex gap-2">
+                <button type="submit" class="btn btn-trail w-100">Search</button>
+                {% if search_query or difficulty_filter %}
+                <a href="{{ url_for('trekker.dashboard') }}" class="btn btn-outline-secondary rounded-3"><i
+                        class="bi bi-arrow-counterclockwise"></i></a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <div class="row g-4">
+        <!-- Open Treks -->
+        <div class="col-lg-8">
+            <div class="card trek-card overflow-hidden mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="bi bi-signpost-split-fill me-2"></i>Open Adventure Routes</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if open_treks %}
+                    <div class="table-responsive">
+                        <table class="table trek-table align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="px-4">Trek Name</th>
+                                    <th>Difficulty</th>
+                                    <th>Duration</th>
+                                    <th>Slots</th>
+                                    <th>Dates</th>
+                                    <th class="text-end px-4">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for trek in open_treks %}
+                                <tr>
+                                    <td class="px-4">
+                                        <div class="trek-name">{{ trek.name }}</div>
+                                        <div class="trek-location"><i class="bi bi-geo-alt-fill text-danger me-1"></i>{{
+                                            trek.location }}</div>
+                                    </td>
+                                    <td>
+                                        {% set diff = trek.difficulty.value %}
+                                        <span
+                                            class="peak-rating {% if diff == 'Easy' %}peak-easy{% elif diff == 'Moderate' %}peak-moderate{% else %}peak-difficult{% endif %}">
+                                            <span class="peaks">
+                                                <i class="bi bi-triangle-fill" style="font-size:0.55rem;"></i>
+                                                <i class="bi bi-triangle-fill {% if diff == 'Easy' %}peak-dim{% endif %}"
+                                                    style="font-size:0.55rem;"></i>
+                                                <i class="bi bi-triangle-fill {% if diff != 'Difficult' %}peak-dim{% endif %}"
+                                                    style="font-size:0.55rem;"></i>
+                                            </span>
+                                            {{ diff }}
+                                        </span>
+                                    </td>
+                                    <td>{{ trek.duration_days }} Days</td>
+                                    <td>
+                                        {% if trek.available_slots > 0 %}
+                                        <div class="fw-bold" style="color: var(--pine);">{{ trek.available_slots }} / {{
+                                            trek.total_slots }}</div>
+                                        <div class="slot-bar-track">
+                                            <div class="slot-bar-fill {% if trek.available_slots <= (trek.total_slots * 0.2) %}low{% endif %}"
+                                                style="width: {{ (trek.available_slots / trek.total_slots * 100) if trek.total_slots else 0 }}%;">
+                                            </div>
+                                        </div>
+                                        {% else %}
+                                        <span class="fw-bold" style="color: var(--rust);"><i
+                                                class="bi bi-x-circle-fill me-1"></i>Full</span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="font-size: 0.85rem;">
+                                        <div>{{ trek.start_date.strftime('%b %d, %Y') }}</div>
+                                        <div class="text-muted">to {{ trek.end_date.strftime('%b %d, %Y') }}</div>
+                                    </td>
+                                    <td class="text-end px-4">
+                                        <form method="POST"
+                                            action="{{ url_for('trekker.book_trek', trek_id=trek.id) }}">
+                                            <button type="submit" class="btn btn-sm btn-book px-3 py-1.5" {% if
+                                                trek.available_slots <=0 %}disabled{% endif %}>
+                                                <i class="bi bi-bookmark-plus me-1"></i>Book
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5 empty-state">
+                        <i class="bi bi-signpost-2 fs-1 mb-3 d-block"></i>
+                        <p class="mb-0 fw-semibold">No treks match your search right now.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Active Bookings -->
+            <div class="card trek-card overflow-hidden mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="bi bi-calendar2-check-fill me-2"></i>My Active Bookings</h5>
+                </div>
+                <div class="card-body p-3">
+                    {% if active_bookings %}
+                    <div class="d-grid gap-3">
+                        {% for booking in active_bookings %}
+                        <div class="booking-item">
+                            <div class="fw-bold mb-1" style="color: var(--pine);">{{ booking.trek.name }}</div>
+                            <div class="text-muted small mb-2">
+                                <i class="bi bi-calendar3 me-1"></i>{{ booking.trek.start_date.strftime('%b %d') }} – {{
+                                booking.trek.end_date.strftime('%b %d, %Y') }}
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge rounded-pill booking-status px-2.5 py-1">
+                                    <i class="bi bi-check-circle-fill me-1"></i>Confirmed
+                                </span>
                                 <form method="POST"
                                     action="{{ url_for('trekker.cancel_booking', booking_id=booking.id) }}">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
+                                    <button type="submit" class="btn btn-sm btn-cancel px-2 py-1">
+                                        <i class="bi bi-x-circle me-1"></i>Cancel
+                                    </button>
                                 </form>
-                                {% endif %}
-                            </td>
-                        </tr>
+                            </div>
+                        </div>
                         {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                <p class="text-muted mb-0">You haven't booked any treks yet.</p>
-                {% endif %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 empty-state">
+                        <i class="bi bi-calendar-x fs-2 mb-2 d-block"></i>
+                        <p class="mb-0 small fw-medium">No active bookings yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- History -->
+            <div class="card trek-card overflow-hidden">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="bi bi-clock-history me-2"></i>Trekking History</h5>
+                </div>
+                <div class="card-body p-3">
+                    {% if past_bookings %}
+                    <div class="d-grid" style="max-height: 320px; overflow-y: auto;">
+                        {% for booking in past_bookings %}
+                        <div class="history-row d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-semibold small" style="color: var(--pine);">{{ booking.trek.name }}</div>
+                                <small class="text-muted" style="font-size: 0.75rem;">{{
+                                    booking.trek.start_date.strftime('%b %Y') }}</small>
+                            </div>
+                            <span
+                                class="badge rounded-pill {% if booking.status.value == 'Completed' %}status-completed{% else %}status-other{% endif %} px-2 py-1"
+                                style="font-size: 0.7rem;">
+                                {{ booking.status.value }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 empty-state">
+                        <i class="bi bi-clock fs-2 mb-2 d-block"></i>
+                        <p class="mb-0 small fw-medium">No past trips recorded.</p>
+                    </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>

@@ -32,11 +32,13 @@ def create_app():
     from blueprints.admin import admin_bp
     from blueprints.staff import staff_bp
     from blueprints.trekker import trekker_bp
+    from blueprints.api import api_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(staff_bp)
     app.register_blueprint(trekker_bp)
+    app.register_blueprint(api_bp)
 
     @app.route("/")
     def index():
@@ -74,10 +76,10 @@ def _init_db():
             status=UserStatusEnum.ACTIVE,
             is_approved=True,
         )
-        admin.set_password("ChangeMe123!")
+        admin.set_password("12345678")
         db.session.add(admin)
         db.session.commit()
-        print(f"Seeded admin: {admin_email} / ChangeMe123!")
+        print(f"Seeded admin: {admin_email} / 12345678")
 
 
 if __name__ == "__main__":

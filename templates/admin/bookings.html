@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}All Bookings History | Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+        <h2 class="fw-bold mb-0 text-success">All Bookings Log</h2>
+        <p class="text-muted mb-0">Review all historical bookings made by trekkers, including active and cancelled registrations.</p>
+    </div>
+</div>
+
+<!-- Search and Filter Bar -->
+<div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="card-body p-3">
+        <form method="GET" action="{{ url_for('admin.view_bookings') }}" class="row g-2 align-items-center">
+            <!-- Search Query -->
+            <div class="col-md-5 col-lg-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" value="{{ search_query }}" class="form-control border-start-0 ps-0" placeholder="Search by booking ID, trekker name, trek name...">
+                </div>
+            </div>
+            <!-- Status Filter -->
+            <div class="col-md-4 col-lg-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-funnel"></i></span>
+                    <select name="status" class="form-select border-start-0 ps-0">
+                        <option value="">-- All Statuses --</option>
+                        {% for status in statuses %}
+                        <option value="{{ status.value }}" {% if status_filter == status.value %}selected{% endif %}>{{ status.value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <!-- Action Buttons -->
+            <div class="col-md-3 col-lg-2 d-flex gap-2">
+                <button type="submit" class="btn btn-success w-100 rounded-3">Filter</button>
+                {% if search_query or status_filter %}
+                <a href="{{ url_for('admin.view_bookings') }}" class="btn btn-outline-secondary rounded-3"><i class="bi bi-arrow-counterclockwise"></i></a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Bookings Table -->
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card-body p-0">
+        {% if bookings %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="px-4">Booking ID</th>
+                        <th>Trek Name</th>
+                        <th>Trekker Name</th>
+                        <th>Trekker Email</th>
+                        <th>Booking Date</th>
+                        <th>Trek Dates</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in bookings %}
+                    <tr>
+                        <td class="px-4 fw-bold text-muted">#{{ booking.id }}</td>
+                        <td>
+                            <div class="fw-semibold text-dark">{{ booking.trek.name }}</div>
+                            <small class="text-muted"><i class="bi bi-geo-alt-fill me-0.5"></i> {{ booking.trek.location }}</small>
+                        </td>
+                        <td>
+                            <div class="fw-semibold text-dark">{{ booking.user.name }}</div>
+                        </td>
+                        <td>{{ booking.user.email }}</td>
+                        <td>
+                            <div>{{ booking.booking_date.strftime('%b %d, %Y') }}</div>
+                            <small class="text-muted">{{ booking.booking_date.strftime('%I:%M %p') }}</small>
+                        </td>
+                        <td style="font-size: 0.85rem;">
+                            <div class="text-dark">{{ booking.trek.start_date.strftime('%b %d, %Y') }}</div>
+                            <div class="text-muted">to {{ booking.trek.end_date.strftime('%b %d, %Y') }}</div>
+                        </td>
+                        <td>
+                            <span class="badge rounded-pill {% if booking.status.value == 'Booked' %}bg-success-subtle text-success border border-success-subtle{% elif booking.status.value == 'Cancelled' %}bg-danger-subtle text-danger border border-danger-subtle{% else %}bg-info-subtle text-info border border-info-subtle{% endif %} px-2.5 py-1">
+                                {{ booking.status.value }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-journal-text fs-1 text-success opacity-50 mb-3 d-block"></i>
+            <p class="mb-0 fw-semibold">No bookings found matching your search.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
