@@ -93,7 +93,7 @@ def manage_treks():
                 (Trek.location.like(f"%{search_query}%"))
             )
             
-    treks = query.order_by(Trek.id.desc()).all()
+    treks = query.order_by(Trek.id.asc()).all()
     
     # Need approved and active staff list to assign in forms
     active_staff = User.query.filter_by(
@@ -289,7 +289,7 @@ def manage_users():
                 (User.phone.like(f"%{search_query}%"))
             )
             
-    users = query.order_by(User.id.desc()).all()
+    users = query.order_by(User.id.asc()).all()
     
     return render_template(
         "admin/users.html",
@@ -365,7 +365,7 @@ def view_bookings():
                 (Trek.name.like(f"%{search_query}%"))
             )
             
-    bookings = query.order_by(Booking.id.desc()).all()
+    bookings = query.order_by(Booking.id.asc()).all()
     
     return render_template(
         "admin/bookings.html",

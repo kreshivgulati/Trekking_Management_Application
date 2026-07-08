@@ -2,123 +2,403 @@
 {% block title %}Staff Dashboard | Trek Management{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 class="fw-bold mb-0 text-success">Staff Dashboard</h2>
-        <p class="text-muted mb-0">Overview of treks assigned to you, registered trekkers, and slots management.</p>
-    </div>
-</div>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap');
 
-<div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
-    <div class="card-header bg-white border-bottom py-3">
-        <h5 class="card-title fw-bold mb-0 text-success d-flex align-items-center">
-            <i class="bi bi-signpost-split-fill me-2"></i> Your Assigned Treks
-        </h5>
-    </div>
-    <div class="card-body p-0">
-        {% if treks_data %}
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th class="px-4">ID</th>
-                        <th>Trek Name</th>
-                        <th>Location</th>
-                        <th>Status</th>
-                        <th>Registered Users</th>
-                        <th>Available Slots</th>
-                        <th>Dates</th>
-                        <th class="text-end px-4">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in treks_data %}
-                    {% set trek = item.trek %}
-                    <tr>
-                        <td class="px-4 fw-bold text-muted">#{{ trek.id }}</td>
-                        <td>
-                            <div class="fw-bold text-dark">{{ trek.name }}</div>
-                            <small class="text-muted">{{ trek.duration_days }} Days &bull; {{ trek.difficulty.value }}</small>
-                        </td>
-                        <td><i class="bi bi-geo-alt-fill text-muted me-1"></i> {{ trek.location }}</td>
-                        <td>
-                            <span class="badge rounded-pill {% if trek.status.value == 'Pending' %}bg-secondary-subtle text-secondary{% elif trek.status.value == 'Approved' %}bg-info-subtle text-info-emphasis{% elif trek.status.value == 'Open' %}bg-success text-white{% elif trek.status.value == 'Closed' %}bg-danger-subtle text-danger{% else %}bg-dark text-white{% endif %} px-2.5 py-1">
-                                {{ trek.status.value }}
-                            </span>
-                        </td>
-                        <td>
-                            <a href="{{ url_for('staff.view_participants', trek_id=trek.id) }}" class="fw-semibold text-success text-decoration-none">
-                                <i class="bi bi-people me-1"></i> {{ item.bookings_count }} Trekkers
-                            </a>
-                        </td>
-                        <td>
-                            <div class="fw-semibold text-dark">{{ trek.available_slots }} / {{ trek.total_slots }}</div>
-                            <small class="text-muted">slots left</small>
-                        </td>
-                        <td style="font-size: 0.85rem;">
-                            <div class="text-dark">{{ trek.start_date.strftime('%b %d, %Y') }}</div>
-                            <div class="text-muted">to {{ trek.end_date.strftime('%b %d, %Y') }}</div>
-                        </td>
-                        <td class="text-end px-4">
-                            <button class="btn btn-sm btn-success rounded-3 px-3 py-1.5 me-1 fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#editSlotsModal-{{ trek.id }}">
-                                <i class="bi bi-pencil-square me-1"></i> Update Details
-                            </button>
-                            <a href="{{ url_for('staff.view_participants', trek_id=trek.id) }}" class="btn btn-sm btn-outline-success rounded-3 px-3 py-1.5 fw-semibold">
-                                <i class="bi bi-eye me-1"></i> View Trekkers
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <div class="text-center py-5 text-muted">
-            <i class="bi bi-signpost-fill fs-1 text-success opacity-50 mb-3 d-block"></i>
-            <p class="mb-0 fw-semibold">No treks have been assigned to you by the administrator yet.</p>
-        </div>
-        {% endif %}
-    </div>
-</div>
+    .staff-dash {
+        --pine: #1B4332;
+        --moss: #40916C;
+        --moss-light: #74C69D;
+        --terracotta: #BC6C25;
+        --terracotta-light: #E8A868;
+        --sand: #FEFAE0;
+        --stone: #6B705C;
+        --rust: #9B2226;
+        font-family: 'Inter', sans-serif;
+        color: var(--pine);
+    }
 
-{% if treks_data %}
+    .staff-dash h2,
+    .staff-dash h5,
+    .staff-dash .card-title,
+    .staff-dash .modal-title {
+        font-family: 'Poppins', sans-serif;
+    }
+
+    /* Header */
+    .staff-header {
+        background: linear-gradient(135deg, var(--pine) 0%, #2D6A4F 100%);
+        border-radius: 1.25rem;
+        padding: 1.75rem 2rem;
+        color: var(--sand);
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 1.75rem;
+    }
+
+    .staff-header::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+            repeating-linear-gradient(120deg, transparent 0 24px, rgba(255, 255, 255, 0.05) 24px 26px);
+        pointer-events: none;
+    }
+
+    .staff-header h2 {
+        color: #fff;
+        font-weight: 800;
+    }
+
+    .staff-header p {
+        color: rgba(254, 250, 224, 0.85);
+    }
+
+    /* Card */
+    .staff-card {
+        border: none;
+        border-radius: 1.25rem;
+        background: #fff;
+        box-shadow: 0 2px 10px rgba(27, 67, 50, 0.06);
+        overflow: hidden;
+    }
+
+    .staff-card .card-header {
+        background: #fff;
+        border-bottom: 1px solid #EDEDE4;
+        padding: 1rem 1.25rem;
+    }
+
+    .staff-card .card-title {
+        color: var(--pine);
+        font-weight: 700;
+    }
+
+    /* Table */
+    .staff-table thead th {
+        background: var(--sand);
+        color: var(--stone);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        border: none;
+        font-weight: 600;
+    }
+
+    .staff-table tbody tr {
+        transition: background .15s ease;
+    }
+
+    .staff-table tbody tr:hover {
+        background: #FBFAF2;
+    }
+
+    .staff-table td {
+        border-color: #F1EFE4;
+        vertical-align: middle;
+        font-size: 0.92rem;
+        font-weight: 500;
+        color: var(--pine);
+    }
+
+    .staff-table .trek-id {
+        color: var(--pine);
+        font-weight: 600;
+    }
+
+    .staff-table .trek-name {
+        font-weight: 600;
+    }
+
+    .staff-table .trek-meta {
+        color: var(--stone);
+        font-size: 0.82rem;
+        font-weight: 500;
+    }
+
+    .staff-table .trek-location {
+        color: var(--stone);
+        font-size: 0.92rem;
+        font-weight: 500;
+    }
+
+    /* Status badges */
+    .status-pill {
+        font-weight: 600;
+        font-size: 0.75rem;
+        padding: 0.35rem 0.7rem;
+    }
+
+    .status-pending {
+        background: #EEEBDD;
+        color: var(--stone);
+    }
+
+    .status-approved {
+        background: rgba(64, 145, 108, 0.12);
+        color: var(--moss);
+    }
+
+    .status-open {
+        background: var(--moss);
+        color: #fff;
+    }
+
+    .status-closed {
+        background: rgba(155, 34, 38, 0.1);
+        color: var(--rust);
+    }
+
+    .status-completed {
+        background: var(--pine);
+        color: #fff;
+    }
+
+    /* Trekkers link */
+    .trekkers-link {
+        color: var(--moss);
+        font-weight: 600;
+        font-size: 0.92rem;
+        text-decoration: none;
+    }
+
+    .slots-count {
+        color: var(--pine);
+        font-size: 0.92rem;
+        font-weight: 600;
+    }
+
+    .slots-label {
+        color: var(--stone);
+        font-size: 0.82rem;
+    }
+
+    /* Buttons */
+    .btn-update {
+        background: var(--moss);
+        border: none;
+        color: #fff;
+        font-weight: 600;
+        border-radius: 0.7rem;
+        transition: background .15s ease, transform .15s ease;
+    }
+
+    .btn-update:hover {
+        background: var(--pine);
+        color: #fff;
+        transform: translateY(-1px);
+    }
+
+    .btn-view {
+        border: 1.5px solid var(--moss);
+        color: var(--moss);
+        font-weight: 600;
+        border-radius: 0.7rem;
+        background: transparent;
+        transition: background .15s ease, color .15s ease;
+    }
+
+    .btn-view:hover {
+        background: var(--moss);
+        color: #fff;
+    }
+
+    .empty-state {
+        color: var(--stone);
+    }
+
+    .empty-state i {
+        color: var(--moss);
+        opacity: 0.4;
+    }
+
+    /* Modal */
+    .staff-dash .modal-content {
+        border-radius: 1.25rem;
+    }
+
+    .staff-dash .modal-title {
+        color: var(--pine);
+    }
+
+    .staff-dash .form-label {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--pine);
+    }
+
+    .staff-dash .form-control,
+    .staff-dash .form-select {
+        border: 1px solid #E4E4D8;
+        border-radius: 0.6rem !important;
+        padding: 0.55rem 0.8rem;
+    }
+
+    .staff-dash .form-control:focus,
+    .staff-dash .form-select:focus {
+        border-color: var(--moss);
+        box-shadow: 0 0 0 3px rgba(64, 145, 108, 0.15);
+    }
+
+    .btn-modal-save {
+        background: var(--moss);
+        border: none;
+        color: #fff;
+        font-weight: 600;
+        border-radius: 0.6rem;
+        transition: background .15s ease;
+    }
+
+    .btn-modal-save:hover {
+        background: var(--pine);
+        color: #fff;
+    }
+
+    .btn-modal-cancel {
+        border: 1px solid #E4E4D8;
+        color: var(--stone);
+        border-radius: 0.6rem;
+        background: transparent;
+    }
+
+    .btn-modal-cancel:hover {
+        background: #F1EFE4;
+        color: var(--pine);
+    }
+</style>
+
+<div class="staff-dash">
+
+    <!-- Header -->
+    <div class="staff-header">
+        <h2 class="mb-1"><i class="bi bi-clipboard2-data-fill me-2"></i>Staff Dashboard</h2>
+        <p class="mb-0">Overview of treks assigned to you, registered trekkers, and slots management.</p>
+    </div>
+
+    <div class="card staff-card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0"><i class="bi bi-signpost-split-fill me-2"></i>Your Assigned Treks</h5>
+        </div>
+        <div class="card-body p-0">
+            {% if treks_data %}
+            <div class="table-responsive">
+                <table class="table staff-table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="px-4">ID</th>
+                            <th>Trek Name</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Registered Users</th>
+                            <th>Available Slots</th>
+                            <th>Dates</th>
+                            <th class="text-end px-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in treks_data %}
+                        {% set trek = item.trek %}
+                        <tr>
+                            <td class="px-4 trek-id">{{ trek.id }}</td>
+                            <td>
+                                <div class="trek-name">{{ trek.name }}</div>
+                                <div class="trek-meta">{{ trek.duration_days }} Days &bull; {{ trek.difficulty.value }}
+                                </div>
+                            </td>
+                            <td class="trek-location">{{
+                                trek.location }}</td>
+                            <td>
+                                <span
+                                    class="badge rounded-pill status-pill {% if trek.status.value == 'Pending' %}status-pending{% elif trek.status.value == 'Approved' %}status-approved{% elif trek.status.value == 'Open' %}status-open{% elif trek.status.value == 'Closed' %}status-closed{% else %}status-completed{% endif %}">
+                                    {{ trek.status.value }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <a href="{{ url_for('staff.view_participants', trek_id=trek.id) }}"
+                                    class="trekkers-link">
+                                    {{ item.bookings_count }}
+                                </a>
+                            </td>
+                            <td>
+                                <div class="slots-count">{{ trek.available_slots }} / {{ trek.total_slots }}</div>
+                                <div class="slots-label">slots left</div>
+                            </td>
+                            <td style="white-space: nowrap;"> {% if trek.start_date.month == trek.end_date.month and
+                                trek.start_date.year ==
+                                trek.end_date.year %}
+                                {{ trek.start_date.strftime('%b %d') }} – {{ trek.end_date.strftime('%d, %Y') }}
+                                {% else %}
+                                {{ trek.start_date.strftime('%b %d') }} – {{ trek.end_date.strftime('%b %d, %Y') }}
+                                {% endif %}
+                            </td>
+                            <td class="text-end px-4">
+                                <button class="btn btn-sm btn-update px-3 py-1.5 me-1" data-bs-toggle="modal"
+                                    data-bs-target="#editSlotsModal-{{ trek.id }}">
+                                    <i class="bi bi-pencil-square me-1"></i>Update Details
+                                </button>
+                                <a href="{{ url_for('staff.view_participants', trek_id=trek.id) }}"
+                                    class="btn btn-sm btn-view px-3 py-1.5">
+                                    <i class="bi bi-eye me-1"></i>View Trekkers
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5 empty-state">
+                <i class="bi bi-signpost-fill fs-1 mb-3 d-block"></i>
+                <p class="mb-0 fw-semibold">No treks have been assigned to you by the administrator yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if treks_data %}
     {% for item in treks_data %}
     {% set trek = item.trek %}
     <!-- Edit Slots & Status Modal -->
-    <div class="modal fade" id="editSlotsModal-{{ trek.id }}" tabindex="-1" aria-labelledby="editSlotsModalLabel-{{ trek.id }}" aria-hidden="true">
+    <div class="modal fade" id="editSlotsModal-{{ trek.id }}" tabindex="-1"
+        aria-labelledby="editSlotsModalLabel-{{ trek.id }}" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-sm">
-            <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-content border-0 shadow-lg">
                 <div class="modal-header border-bottom-0 pb-0">
-                    <h5 class="modal-title fw-bold text-success" id="editSlotsModalLabel-{{ trek.id }}">Update Trek Details</h5>
+                    <h5 class="modal-title fw-bold" id="editSlotsModalLabel-{{ trek.id }}">Update Trek Details</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form method="POST" action="{{ url_for('staff.edit_trek_details', trek_id=trek.id) }}">
                     <div class="modal-body py-3">
-                        <p class="text-muted small">Update available slots and status of <strong>{{ trek.name }}</strong>.</p>
+                        <p class="small" style="color: var(--stone);">Update available slots and status of <strong
+                                style="color: var(--pine);">{{ trek.name }}</strong>.</p>
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Available Slots</label>
-                            <input type="number" name="available_slots" value="{{ trek.available_slots }}" class="form-control rounded-3" min="0" required>
+                            <label class="form-label">Available Slots</label>
+                            <input type="number" name="available_slots" value="{{ trek.available_slots }}"
+                                class="form-control" min="0" required>
                             <small class="text-muted fs-8">Currently {{ item.bookings_count }} active bookings</small>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Trek Status</label>
-                            <select name="status" class="form-select rounded-3" required>
+                            <label class="form-label">Trek Status</label>
+                            <select name="status" class="form-select" required>
                                 {% for stat in statuses %}
-                                    {% if stat.value != 'Pending' and stat.value != 'Approved' %}
-                                    <option value="{{ stat.value }}" {% if trek.status == stat %}selected{% endif %}>{{ stat.value }}</option>
-                                    {% endif %}
+                                {% if stat.value != 'Pending' and stat.value != 'Approved' %}
+                                <option value="{{ stat.value }}" {% if trek.status==stat %}selected{% endif %}>{{
+                                    stat.value }}</option>
+                                {% endif %}
                                 {% endfor %}
                             </select>
                         </div>
                     </div>
                     <div class="modal-footer border-top-0 pt-0">
-                        <button type="button" class="btn btn-outline-secondary rounded-3 btn-sm" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-success rounded-3 btn-sm px-3">Save Changes</button>
+                        <button type="button" class="btn btn-modal-cancel btn-sm"
+                            data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-modal-save btn-sm px-3">Save Changes</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
     {% endfor %}
-{% endif %}
+    {% endif %}
+</div>
 {% endblock %}

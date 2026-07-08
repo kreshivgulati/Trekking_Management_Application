@@ -55,8 +55,8 @@ def dashboard():
 def book_trek(trek_id):
     trek = Trek.query.get_or_404(trek_id)
     
-    # Booking conditions: trek must be APPROVED or OPEN and have available slots
-    if trek.status not in (TrekStatusEnum.APPROVED, TrekStatusEnum.OPEN):
+    # Booking conditions: trek must be  OPEN and have available slots
+    if trek.status not in ( TrekStatusEnum.OPEN):
         flash("This trek is not open for bookings.", "danger")
         return redirect(url_for("trekker.dashboard"))
         

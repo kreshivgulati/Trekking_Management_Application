@@ -2,56 +2,314 @@
 {% block title %}Manage Users & Staff | Admin{% endblock %}
 
 {% block content %}
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-    <div>
-        <h2 class="fw-bold mb-0 text-success">User Directory</h2>
-        <p class="text-muted mb-0">Search all registered trekkers and staff guides, manage approvals, and toggle blacklists.</p>
-    </div>
+<style>
+    .admin-header {
+        background: linear-gradient(135deg, var(--pine) 0%, var(--pine-dark) 100%);
+        border-radius: 1.25rem;
+        padding: 1.75rem 2rem;
+        color: var(--sand);
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 1.75rem;
+    }
+
+    .admin-header::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: repeating-linear-gradient(120deg, transparent 0 24px, rgba(255, 255, 255, 0.05) 24px 26px);
+        pointer-events: none;
+    }
+
+    .admin-header h2 {
+        color: #fff;
+        font-weight: 800;
+        position: relative;
+    }
+
+    .admin-header p {
+        color: rgba(254, 250, 224, 0.85);
+        position: relative;
+        margin: 0;
+    }
+
+    .search-bar {
+        background: var(--sand);
+        border-radius: 1rem;
+        padding: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .search-bar .input-group {
+        background: #fff;
+        border: 1px solid #E4DFC8;
+        border-radius: 0.75rem;
+        overflow: hidden;
+    }
+
+    .search-bar .input-group-text {
+        background: #fff;
+        border: none;
+        color: var(--stone);
+        padding: 0.8rem 1rem;
+    }
+
+    .search-bar .form-control,
+    .search-bar .form-select {
+        border: none;
+        background: #fff;
+        box-shadow: none;
+        padding: 0.8rem 0.75rem;
+    }
+
+    .search-bar .form-control:focus,
+    .search-bar .form-select:focus {
+        box-shadow: none;
+    }
+
+    .search-bar .input-group:focus-within {
+        border-color: var(--moss);
+        box-shadow: 0 0 0 3px rgba(64, 145, 108, 0.15);
+    }
+
+    .btn-trail {
+        background: var(--moss);
+        color: #fff;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        border: none;
+        transition: transform .15s ease, background .15s ease;
+    }
+
+    .btn-trail:hover {
+        background: var(--pine);
+        color: #fff;
+        transform: translateY(-1px);
+    }
+
+    .trek-card {
+        border: none;
+        border-radius: 1.25rem;
+        background: #fff;
+        box-shadow: 0 2px 10px rgba(27, 67, 50, 0.06);
+    }
+
+    .trek-table thead th {
+        background: var(--mist);
+        color: var(--stone);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        border: none;
+        font-weight: 600;
+    }
+
+    .trek-table tbody tr {
+        transition: background .15s ease;
+    }
+
+    .trek-table tbody tr:hover {
+        background: #FBFAF2;
+    }
+
+    .trek-table td {
+        border-color: #F1EFE4;
+        vertical-align: middle;
+    }
+
+    .user-id {
+        color: var(--stone);
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+
+    .user-name {
+        color: var(--pine);
+        font-weight: 600;
+    }
+
+    .user-meta {
+        color: var(--stone);
+        font-size: 0.78rem;
+    }
+
+    /* Role badge */
+    .role-pill {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        padding: 0.32rem 0.7rem;
+        text-transform: uppercase;
+    }
+
+    .role-staff {
+        background: rgba(188, 108, 37, 0.12);
+        color: var(--terracotta);
+    }
+
+    .role-trekker {
+        background: rgba(64, 145, 108, 0.12);
+        color: var(--moss);
+    }
+
+    /* Approval badge */
+    .approval-pill {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.32rem 0.7rem;
+    }
+
+    .approval-approved {
+        background: rgba(64, 145, 108, 0.12);
+        color: var(--moss);
+    }
+
+    .approval-pending {
+        background: rgba(188, 108, 37, 0.12);
+        color: var(--terracotta);
+    }
+
+    /* Account status */
+    .account-pill {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.34rem 0.8rem;
+    }
+
+    .account-active {
+        background: var(--moss);
+        color: #fff;
+    }
+
+    .account-blacklisted {
+        background: var(--rust);
+        color: #fff;
+    }
+
+    /* Action buttons */
+    .btn-action {
+        font-size: 0.78rem;
+        font-weight: 600;
+        border-radius: 0.6rem;
+        padding: 0.35rem 0.8rem;
+        transition: background .15s ease, color .15s ease, transform .15s ease;
+    }
+
+    .btn-approve {
+        background: var(--moss);
+        color: #fff;
+        border: none;
+    }
+
+    .btn-approve:hover {
+        background: var(--pine);
+        color: #fff;
+    }
+
+    .btn-disapprove {
+        background: transparent;
+        color: var(--rust);
+        border: 1px solid var(--rust);
+    }
+
+    .btn-disapprove:hover {
+        background: var(--rust);
+        color: #fff;
+    }
+
+    .btn-blacklist {
+        background: transparent;
+        color: var(--rust);
+        border: 1px solid var(--rust);
+    }
+
+    .btn-blacklist:hover {
+        background: var(--rust);
+        color: #fff;
+    }
+
+    .btn-activate {
+        background: transparent;
+        color: var(--moss);
+        border: 1px solid var(--moss);
+    }
+
+    .btn-activate:hover {
+        background: var(--moss);
+        color: #fff;
+    }
+
+    .empty-state {
+        color: var(--stone);
+    }
+
+    .empty-state i {
+        color: var(--moss);
+        opacity: 0.4;
+    }
+</style>
+
+<div class="admin-header">
+    <h2 class="mb-1"><i class="bi bi-people-fill me-2"></i>User Directory</h2>
+    <p>Search all registered trekkers and staff guides, manage approvals, and toggle blacklists.</p>
 </div>
 
 <!-- Search and Filter Bar -->
-<div class="card border-0 shadow-sm rounded-4 mb-4">
-    <div class="card-body p-3">
-        <form method="GET" action="{{ url_for('admin.manage_users') }}" class="row g-2 align-items-center">
-            <!-- Search Query -->
-            <div class="col-md-5 col-lg-6">
-                <div class="input-group">
-                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
-                    <input type="text" name="q" value="{{ search_query }}" class="form-control border-start-0 ps-0" placeholder="Search by ID, name, email, phone...">
-                </div>
-            </div>
-            <!-- Role Filter -->
-            <div class="col-md-4 col-lg-4">
-                <div class="input-group">
-                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-funnel"></i></span>
-                    <select name="role" class="form-select border-start-0 ps-0">
-                        <option value="">-- All Roles --</option>
-                        {% for role in roles %}
-                            {% if role.value != 'admin' %}
-                            <option value="{{ role.value }}" {% if role_filter == role.value %}selected{% endif %}>{{ role.value|title }}</option>
-                            {% endif %}
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-            <!-- Action Buttons -->
-            <div class="col-md-3 col-lg-2 d-flex gap-2">
-                <button type="submit" class="btn btn-success w-100 rounded-3">Filter</button>
-                {% if search_query or role_filter %}
-                <a href="{{ url_for('admin.manage_users') }}" class="btn btn-outline-secondary rounded-3"><i class="bi bi-arrow-counterclockwise"></i></a>
-                {% endif %}
-            </div>
-        </form>
-    </div>
-</div>
+<div class="search-bar">
+    <form method="GET" action="{{ url_for('admin.manage_users') }}" class="row g-2 align-items-center">
 
+        <!-- Search -->
+        <div class="col-md-5 col-lg-6">
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text" name="q" value="{{ search_query }}" class="form-control"
+                    placeholder="Search by ID, name, email, phone...">
+            </div>
+        </div>
+
+        <!-- Role Filter -->
+        <div class="col-md-4 col-lg-4">
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="bi bi-funnel"></i>
+                </span>
+                <select name="role" class="form-select">
+                    <option value=""> All Roles </option>
+                    {% for role in roles %}
+                    {% if role.value != 'admin' %}
+                    <option value="{{ role.value }}" {% if role_filter==role.value %}selected{% endif %}>
+                        {{ role.value|title }}
+                    </option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="col-md-3 col-lg-2 d-flex gap-2">
+            <button type="submit" class="btn btn-trail w-100">
+                <i class="bi bi-search me-1"></i>Filter
+            </button>
+
+            {% if search_query or role_filter %}
+            <a href="{{ url_for('admin.manage_users') }}" class="btn btn-outline-secondary rounded-3">
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </a>
+            {% endif %}
+        </div>
+
+    </form>
+</div>
 <!-- Users Table -->
-<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+<div class="card trek-card overflow-hidden">
     <div class="card-body p-0">
         {% if users %}
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+            <table class="table trek-table align-middle mb-0">
+                <thead>
                     <tr>
                         <th class="px-4">ID</th>
                         <th>User Name</th>
@@ -66,53 +324,60 @@
                 <tbody>
                     {% for user in users %}
                     <tr>
-                        <td class="px-4 fw-bold text-muted">#{{ user.id }}</td>
+                        <td class="px-4 user-id">{{ user.id }}</td>
                         <td>
-                            <div class="fw-semibold text-dark">{{ user.name }}</div>
-                            <small class="text-muted">Registered {{ user.created_at.strftime('%b %d, %Y') }}</small>
+                            <div class="user-name">{{ user.name }}</div>
+                            <div class="user-meta">Registered {{ user.created_at.strftime('%b %d, %Y') }}</div>
                         </td>
-                        <td>{{ user.email }}</td>
-                        <td>{{ user.phone or '-' }}</td>
+                        <td class="text-muted">{{ user.email }}</td>
+                        <td class="text-muted">{{ user.phone or '-' }}</td>
                         <td>
-                            <span class="badge {% if user.role.value == 'staff' %}bg-info-subtle text-info-emphasis border border-info-subtle{% else %}bg-warning-subtle text-warning-emphasis border border-warning-subtle{% endif %} px-2.5 py-1 text-uppercase">
+                            <span
+                                class="badge role-pill {% if user.role.value == 'staff' %}role-staff{% else %}role-trekker{% endif %}">
                                 {{ user.role.value }}
                             </span>
                         </td>
                         <td>
                             {% if user.role.value == 'staff' %}
-                                {% if user.is_approved %}
-                                <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-2 py-1">
-                                    <i class="bi bi-patch-check-fill me-1"></i> Approved
-                                </span>
-                                {% else %}
-                                <span class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">
-                                    <i class="bi bi-clock-history me-1"></i> Pending Approval
-                                </span>
-                                {% endif %}
+                            {% if user.is_approved %}
+                            <span class="badge rounded-pill approval-pill approval-approved">
+                                <i class="bi bi-patch-check-fill me-1"></i>Approved
+                            </span>
+                            {% else %}
+                            <span class="badge rounded-pill approval-pill approval-pending">
+                                <i class="bi bi-clock-history me-1"></i>Pending Approval
+                            </span>
+                            {% endif %}
                             {% else %}
                             <span class="text-muted">-</span>
                             {% endif %}
                         </td>
                         <td>
                             {% if user.status.value == 'active' %}
-                            <span class="badge rounded-pill bg-success px-2.5 py-1">Active</span>
+                            <span class="badge rounded-pill account-pill account-active">Active</span>
                             {% else %}
-                            <span class="badge rounded-pill bg-danger px-2.5 py-1">Blacklisted</span>
+                            <span class="badge rounded-pill account-pill account-blacklisted">Blacklisted</span>
                             {% endif %}
                         </td>
                         <td class="text-end px-4">
                             <!-- Toggle Approval for Staff -->
                             {% if user.role.value == 'staff' %}
-                            <form method="POST" action="{{ url_for('admin.toggle_staff_approval', user_id=user.id) }}" class="d-inline">
-                                <button type="submit" class="btn btn-sm {% if user.is_approved %}btn-outline-danger{% else %}btn-success{% endif %} rounded-3 px-2.5 py-1 fw-semibold shadow-sm me-1" title="{% if user.is_approved %}Revoke Approval{% else %}Grant Approval{% endif %}">
+                            <form method="POST" action="{{ url_for('admin.toggle_staff_approval', user_id=user.id) }}"
+                                class="d-inline">
+                                <button type="submit"
+                                    class="btn btn-sm btn-action {% if user.is_approved %}btn-disapprove{% else %}btn-approve{% endif %} me-1"
+                                    title="{% if user.is_approved %}Revoke Approval{% else %}Grant Approval{% endif %}">
                                     {% if user.is_approved %}Disapprove{% else %}Approve{% endif %}
                                 </button>
                             </form>
                             {% endif %}
-                            
+
                             <!-- Toggle Blacklist status -->
-                            <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=user.id) }}" class="d-inline">
-                                <button type="submit" class="btn btn-sm {% if user.status.value == 'active' %}btn-outline-danger{% else %}btn-outline-success{% endif %} rounded-3 px-2.5 py-1 fw-semibold shadow-sm" title="{% if user.status.value == 'active' %}Blacklist User{% else %}Activate User{% endif %}">
+                            <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=user.id) }}"
+                                class="d-inline">
+                                <button type="submit"
+                                    class="btn btn-sm btn-action {% if user.status.value == 'active' %}btn-blacklist{% else %}btn-activate{% endif %}"
+                                    title="{% if user.status.value == 'active' %}Blacklist User{% else %}Activate User{% endif %}">
                                     {% if user.status.value == 'active' %}Blacklist{% else %}Activate{% endif %}
                                 </button>
                             </form>
@@ -123,8 +388,8 @@
             </table>
         </div>
         {% else %}
-        <div class="text-center py-5 text-muted">
-            <i class="bi bi-people fs-1 text-success opacity-50 mb-3 d-block"></i>
+        <div class="text-center py-5 empty-state">
+            <i class="bi bi-people fs-1 mb-3 d-block"></i>
             <p class="mb-0 fw-semibold">No users found matching your filters.</p>
         </div>
         {% endif %}

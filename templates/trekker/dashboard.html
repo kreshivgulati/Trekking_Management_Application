@@ -78,21 +78,42 @@
     }
 
     /* Search bar */
+    /* Search bar */
     .search-bar {
         background: var(--sand);
         border-radius: 1rem;
-        padding: 0.9rem 1.1rem;
+        padding: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .search-bar .input-group {
+        background: #fff;
+        border: 1px solid #E4DFC8;
+        border-radius: 0.75rem;
+        overflow: hidden;
+    }
+
+    .search-bar .input-group-text {
+        background: #fff;
+        border: none;
+        color: var(--stone);
+        padding: 0.8rem 1rem;
     }
 
     .search-bar .form-control,
     .search-bar .form-select {
         background: #fff;
-        border: 1px solid #E4DFC8;
-        border-radius: 0.75rem !important;
+        border: none;
+        box-shadow: none;
+        padding: 0.8rem 0.75rem;
     }
 
     .search-bar .form-control:focus,
     .search-bar .form-select:focus {
+        box-shadow: none;
+    }
+
+    .search-bar .input-group:focus-within {
         border-color: var(--moss);
         box-shadow: 0 0 0 3px rgba(64, 145, 108, 0.15);
     }
@@ -216,6 +237,20 @@
         color: var(--stone);
     }
 
+    /* Already-booked badge (replaces the Book button) */
+    .badge-booked {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: rgba(64, 145, 108, 0.12);
+        color: var(--moss);
+        font-weight: 600;
+        font-size: 0.8rem;
+        border-radius: 0.75rem;
+        padding: 0.45rem 0.9rem;
+        white-space: nowrap;
+    }
+
     /* Sidebar booking cards */
     .booking-item {
         border: 1px solid #EDEDE4;
@@ -278,39 +313,56 @@
 
     <!-- Header -->
     <div class="trek-header">
-        <h2 class="mb-1"><i class="bi bi-compass me-2"></i>Explore Trekking Adventures</h2>
+        <h2 class="mb-1">Explore Trekking Adventures</h2>
         <p class="mb-0">Browse available treks, check difficulty, book your next journey, and revisit past trips.</p>
     </div>
 
     <!-- Search and Filter Bar -->
     <div class="search-bar mb-4">
         <form method="GET" action="{{ url_for('trekker.dashboard') }}" class="row g-2 align-items-center">
+
+            <!-- Search -->
             <div class="col-md-5 col-lg-6">
                 <div class="input-group">
-                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
-                    <input type="text" name="q" value="{{ search_query }}" class="form-control border-start-0 ps-0"
+                    <span class="input-group-text">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" name="q" value="{{ search_query }}" class="form-control"
                         placeholder="Search by trek name or location...">
                 </div>
             </div>
+
+            <!-- Difficulty -->
             <div class="col-md-4 col-lg-4">
                 <div class="input-group">
-                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-funnel"></i></span>
-                    <select name="difficulty" class="form-select border-start-0 ps-0">
-                        <option value="">-- All Difficulties --</option>
+                    <span class="input-group-text">
+                        <i class="bi bi-funnel"></i>
+                    </span>
+
+                    <select name="difficulty" class="form-select">
+                        <option value="">All Difficulties</option>
                         {% for diff in difficulties %}
-                        <option value="{{ diff.value }}" {% if difficulty_filter==diff.value %}selected{% endif %}>{{
-                            diff.value }}</option>
+                        <option value="{{ diff.value }}" {% if difficulty_filter==diff.value %}selected{% endif %}>
+                            {{ diff.value }}
+                        </option>
                         {% endfor %}
                     </select>
                 </div>
             </div>
+
+            <!-- Buttons -->
             <div class="col-md-3 col-lg-2 d-flex gap-2">
-                <button type="submit" class="btn btn-trail w-100">Search</button>
+                <button type="submit" class="btn btn-trail w-100">
+                    <i class="bi bi-search me-1"></i>Search
+                </button>
+
                 {% if search_query or difficulty_filter %}
-                <a href="{{ url_for('trekker.dashboard') }}" class="btn btn-outline-secondary rounded-3"><i
-                        class="bi bi-arrow-counterclockwise"></i></a>
+                <a href="{{ url_for('trekker.dashboard') }}" class="btn btn-outline-secondary rounded-3">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
                 {% endif %}
             </div>
+
         </form>
     </div>
 
@@ -323,6 +375,7 @@
                 </div>
                 <div class="card-body p-0">
                     {% if open_treks %}
+                    {% set booked_trek_ids = active_bookings | map(attribute='trek_id') | list %}
                     <div class="table-responsive">
                         <table class="table trek-table align-middle mb-0">
                             <thead>
@@ -340,8 +393,7 @@
                                 <tr>
                                     <td class="px-4">
                                         <div class="trek-name">{{ trek.name }}</div>
-                                        <div class="trek-location"><i class="bi bi-geo-alt-fill text-danger me-1"></i>{{
-                                            trek.location }}</div>
+                                        <div class="trek-location">{{ trek.location }}</div>
                                     </td>
                                     <td>
                                         {% set diff = trek.difficulty.value %}
@@ -351,7 +403,7 @@
                                                 <i class="bi bi-triangle-fill" style="font-size:0.55rem;"></i>
                                                 <i class="bi bi-triangle-fill {% if diff == 'Easy' %}peak-dim{% endif %}"
                                                     style="font-size:0.55rem;"></i>
-                                                <i class="bi bi-triangle-fill {% if diff != 'Difficult' %}peak-dim{% endif %}"
+                                                <i class="bi bi-triangle-fill {% if diff != 'Hard' %}peak-dim{% endif %}"
                                                     style="font-size:0.55rem;"></i>
                                             </span>
                                             {{ diff }}
@@ -364,19 +416,28 @@
                                             trek.total_slots }}</div>
                                         <div class="slot-bar-track">
                                             <div class="slot-bar-fill {% if trek.available_slots <= (trek.total_slots * 0.2) %}low{% endif %}"
-                                                style="width: {{ (trek.available_slots / trek.total_slots * 100) if trek.total_slots else 0 }}%;">
+                                                data-pct="{{ (trek.available_slots / trek.total_slots * 100) if trek.total_slots else 0 }}">
                                             </div>
                                         </div>
                                         {% else %}
-                                        <span class="fw-bold" style="color: var(--rust);"><i
-                                                class="bi bi-x-circle-fill me-1"></i>Full</span>
+                                        <span class="fw-bold" style="color: var(--rust);">Full</span>
                                         {% endif %}
                                     </td>
-                                    <td style="font-size: 0.85rem;">
-                                        <div>{{ trek.start_date.strftime('%b %d, %Y') }}</div>
-                                        <div class="text-muted">to {{ trek.end_date.strftime('%b %d, %Y') }}</div>
+                                    <td style="font-size: 0.85rem; white-space: nowrap;">
+                                        {% if trek.start_date.month == trek.end_date.month and trek.start_date.year ==
+                                        trek.end_date.year %}
+                                        {{ trek.start_date.strftime('%b %d') }} – {{ trek.end_date.strftime('%d, %Y') }}
+                                        {% else %}
+                                        {{ trek.start_date.strftime('%b %d') }} – {{ trek.end_date.strftime('%b %d, %Y')
+                                        }}
+                                        {% endif %}
                                     </td>
                                     <td class="text-end px-4">
+                                        {% if trek.id in booked_trek_ids %}
+                                        <span class="badge-booked">
+                                            <i class="bi bi-check-circle-fill"></i>Booked
+                                        </span>
+                                        {% else %}
                                         <form method="POST"
                                             action="{{ url_for('trekker.book_trek', trek_id=trek.id) }}">
                                             <button type="submit" class="btn btn-sm btn-book px-3 py-1.5" {% if
@@ -384,6 +445,7 @@
                                                 <i class="bi bi-bookmark-plus me-1"></i>Book
                                             </button>
                                         </form>
+                                        {% endif %}
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -405,7 +467,7 @@
             <!-- Active Bookings -->
             <div class="card trek-card overflow-hidden mb-4">
                 <div class="card-header">
-                    <h5 class="card-title mb-0"><i class="bi bi-calendar2-check-fill me-2"></i>My Active Bookings</h5>
+                    <h5 class="card-title mb-0">My Active Bookings</h5>
                 </div>
                 <div class="card-body p-3">
                     {% if active_bookings %}
@@ -414,7 +476,7 @@
                         <div class="booking-item">
                             <div class="fw-bold mb-1" style="color: var(--pine);">{{ booking.trek.name }}</div>
                             <div class="text-muted small mb-2">
-                                <i class="bi bi-calendar3 me-1"></i>{{ booking.trek.start_date.strftime('%b %d') }} – {{
+                                {{ booking.trek.start_date.strftime('%b %d') }} – {{
                                 booking.trek.end_date.strftime('%b %d, %Y') }}
                             </div>
                             <div class="d-flex justify-content-between align-items-center">
@@ -474,4 +536,9 @@
         </div>
     </div>
 </div>
+<script>
+    document.querySelectorAll('.slot-bar-fill[data-pct]').forEach(function (el) {
+        el.style.width = el.dataset.pct + '%';
+    });
+</script>
 {% endblock %}
