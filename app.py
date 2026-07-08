@@ -1,6 +1,6 @@
 import os
-from flask import Flask, redirect, url_for
-from flask_login import LoginManager, current_user
+from flask import Flask, redirect, url_for, flash, request
+from flask_login import LoginManager, current_user, logout_user
 
 from database import db
 from models import User, RoleEnum, UserStatusEnum
@@ -26,6 +26,15 @@ def create_app():
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
+
+    @app.before_request
+    def check_blacklisted():
+        if request.endpoint and (request.endpoint.startswith('static') or request.endpoint == 'auth.login' or request.endpoint == 'auth.logout'):
+            return
+        if current_user.is_authenticated and current_user.is_blacklisted:
+            logout_user()
+            flash("Your account has been blacklisted. Contact admin.", "danger")
+            return redirect(url_for("auth.login"))
 
     # Register blueprints
     from blueprints.auth import auth_bp

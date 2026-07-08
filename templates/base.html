@@ -189,6 +189,12 @@
                             <i class="bi bi-house-door"></i> Staff Dashboard
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link px-3 py-2 d-flex align-items-center {% if request.path == url_for('staff.edit_profile') %}active fw-semibold{% endif %}"
+                            href="{{ url_for('staff.edit_profile') }}">
+                            <i class="bi bi-person-gear"></i> My Profile
+                        </a>
+                    </li>
                     {% elif current_user.is_trekker %}
                     <li class="nav-item">
                         <a class="nav-link px-3 py-2 d-flex align-items-center {% if request.path == url_for('trekker.dashboard') %}active fw-semibold{% endif %}"

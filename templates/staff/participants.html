@@ -205,6 +205,7 @@
                             <th>Phone Number</th>
                             <th>Booking Date</th>
                             <th>Status</th>
+                            <th class="text-end pe-4">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -224,6 +225,13 @@
                                 <span class="badge rounded-pill booking-status-pill status-booked">
                                     <i class="bi bi-check-circle-fill me-1"></i>{{ booking.status.value }}
                                 </span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <form action="{{ url_for('staff.remove_participant', booking_id=booking.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to remove this trekker from the trek?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" style="border-radius: 0.5rem; font-weight: 500;">
+                                        <i class="bi bi-person-x-fill me-1"></i>Remove
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                         {% endfor %}

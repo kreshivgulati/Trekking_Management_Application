@@ -48,6 +48,11 @@ class Trek(db.Model):
             for booking in self.bookings:
                 if booking.status == BookingStatusEnum.BOOKED:
                     booking.status = BookingStatusEnum.COMPLETED
+        elif new_status == TrekStatusEnum.CLOSED:
+            for booking in self.bookings:
+                if booking.status == BookingStatusEnum.BOOKED:
+                    booking.status = BookingStatusEnum.CANCELLED
+                    self.available_slots += 1
 
     def __repr__(self):
         return f"<Trek {self.id} {self.name} status={self.status.value}>"

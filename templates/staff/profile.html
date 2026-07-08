@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% block title %}My Profile - Trek Management{% endblock %}
+
+{% block content %}
+<style>
+    .profile-wrap {
+        min-height: calc(100vh - 220px);
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        justify-content: center;
+        gap: 1.25rem;
+        padding: 2rem 0;
+    }
+
+    .profile-card {
+        border: none;
+        border-radius: 1.25rem;
+        overflow: hidden;
+        box-shadow: 0 4px 24px rgba(27, 67, 50, 0.08);
+        width: 100%;
+    }
+
+    .profile-banner {
+        background: linear-gradient(135deg, var(--pine) 0%, var(--pine-dark) 100%);
+        padding: 2rem 2rem 1.5rem;
+        text-align: center;
+        color: var(--sand);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .profile-banner::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: repeating-linear-gradient(120deg, transparent 0 24px, rgba(255, 255, 255, 0.05) 24px 26px);
+    }
+
+    .profile-avatar {
+        width: 4rem;
+        height: 4rem;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.12);
+        border: 2px solid rgba(254, 250, 224, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        position: relative;
+    }
+
+    .profile-avatar i {
+        font-size: 1.75rem;
+        color: var(--moss-light);
+    }
+
+    .profile-banner h3 {
+        font-weight: 700;
+        color: #fff;
+        margin: 0.75rem 0 0;
+        position: relative;
+    }
+
+    .profile-banner p {
+        color: rgba(254, 250, 224, 0.75);
+        font-size: 0.85rem;
+        margin: 0.25rem 0 0;
+        position: relative;
+    }
+
+    .profile-body {
+        padding: 2rem;
+        background: #fff;
+    }
+
+    .profile-body .form-label {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--pine);
+    }
+
+    .profile-body .input-group-text {
+        background: var(--mist);
+        border: 1px solid #E4E4D8;
+        border-right: none;
+        color: var(--stone);
+    }
+
+    .profile-body .form-control {
+        border: 1px solid #E4E4D8;
+        border-left: none;
+        padding: 0.6rem 0.9rem;
+    }
+
+    .profile-body .input-group:focus-within .input-group-text,
+    .profile-body .input-group:focus-within .form-control {
+        border-color: var(--moss);
+    }
+
+    .profile-body .form-control:focus {
+        box-shadow: none;
+    }
+
+    .profile-body .input-group:focus-within {
+        box-shadow: 0 0 0 3px rgba(64, 145, 108, 0.15);
+        border-radius: 0.6rem;
+    }
+
+    .section-divider {
+        display: flex;
+        align-items: center;
+        color: var(--stone);
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin: 1.75rem 0 0.35rem;
+    }
+
+    .section-divider::before,
+    .section-divider::after {
+        content: "";
+        flex: 1;
+        border-bottom: 1px solid #E4E4D8;
+    }
+
+    .section-divider span {
+        padding: 0 0.75rem;
+    }
+
+    .section-hint {
+        font-size: 0.8rem;
+        color: var(--stone);
+        margin-bottom: 1.25rem;
+    }
+
+    .btn-save {
+        background: var(--moss);
+        border: none;
+        color: #fff;
+        font-weight: 600;
+        border-radius: 0.7rem;
+        padding: 0.65rem;
+        transition: background .15s ease, transform .15s ease;
+    }
+
+    .btn-save:hover {
+        background: var(--pine);
+        color: #fff;
+        transform: translateY(-1px);
+    }
+</style>
+
+<div class="profile-wrap">
+    <div class="row justify-content-center w-100">
+        <div class="col-md-6 col-lg-5">
+
+            <div class="card profile-card">
+                <div class="profile-banner">
+                    <div class="profile-avatar">
+                        <i class="bi bi-person-fill"></i>
+                    </div>
+                    <h3>Manage Profile</h3>
+                    <p>View and update your staff details</p>
+                </div>
+
+                <div class="profile-body">
+                    <form method="POST" action="{{ url_for('staff.edit_profile') }}">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Full Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <input type="text" class="form-control" id="name" name="name"
+                                    value="{{ current_user.name }}" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                <input type="email" class="form-control" id="email" name="email"
+                                    value="{{ current_user.email }}" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                                <input type="text" class="form-control" id="phone" name="phone"
+                                    value="{{ current_user.phone or '' }}" placeholder="e.g., +91 8751199244">
+                            </div>
+                        </div>
+
+                        <div class="section-divider"><span>Update Password</span></div>
+                        <p class="section-hint">Leave blank if you do not want to change your password.</p>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">New Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>
+                                <input type="password" class="form-control" id="password" name="password" minlength="6"
+                                    placeholder="At least 6 characters">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="confirm_password" class="form-label">Confirm New Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>
+                                <input type="password" class="form-control" id="confirm_password"
+                                    name="confirm_password" minlength="6" placeholder="Re-enter new password">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-save w-100 mt-2">
+                            <i class="bi bi-check2-circle me-1"></i> Save Changes
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

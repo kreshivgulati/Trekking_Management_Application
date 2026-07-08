@@ -53,10 +53,14 @@ def dashboard():
 @login_required
 @role_required(RoleEnum.TREKKER)
 def book_trek(trek_id):
+    if current_user.is_blacklisted:
+        flash("Your account has been blacklisted. You cannot book treks.", "danger")
+        return redirect(url_for("auth.login"))
+
     trek = Trek.query.get_or_404(trek_id)
     
-    # Booking conditions: trek must be  OPEN and have available slots
-    if trek.status not in ( TrekStatusEnum.OPEN):
+    # Booking conditions: trek must be OPEN and have available slots
+    if trek.status != TrekStatusEnum.OPEN:
         flash("This trek is not open for bookings.", "danger")
         return redirect(url_for("trekker.dashboard"))
         

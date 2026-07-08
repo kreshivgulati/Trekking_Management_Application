@@ -228,6 +228,7 @@
                         <th>Booking Date</th>
                         <th>Trek Dates</th>
                         <th>Status</th>
+                        <th class="text-end pe-4">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -262,6 +263,17 @@
                                 class="badge rounded-pill status-pill {% if booking.status.value == 'Booked' %}status-booked{% elif booking.status.value == 'Cancelled' %}status-cancelled{% else %}status-completed{% endif %}">
                                 {{ booking.status.value }}
                             </span>
+                        </td>
+                        <td class="text-end pe-4">
+                            {% if booking.status.value == 'Booked' %}
+                            <form action="{{ url_for('admin.remove_participant', booking_id=booking.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Remove {{ booking.user.name }} from {{ booking.trek.name }}?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" style="border-radius:0.5rem;font-weight:500;">
+                                    <i class="bi bi-person-x-fill me-1"></i>Remove
+                                </button>
+                            </form>
+                            {% else %}
+                            <span class="text-muted small">—</span>
+                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}

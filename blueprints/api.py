@@ -33,7 +33,7 @@ def get_treks():
             "start_date": t.start_date.isoformat(),
             "end_date": t.end_date.isoformat(),
             "assigned_staff_id": t.assigned_staff_id,
-            "assigned_staff_name": t.assigned_staff.name if t.assigned_staff else None
+            "assigned_staff_name": t.assigned_staff.name if (t.assigned_staff and not t.assigned_staff.is_blacklisted) else None
         } for t in treks]
     })
 
@@ -61,7 +61,7 @@ def get_trek(trek_id):
             "start_date": trek.start_date.isoformat(),
             "end_date": trek.end_date.isoformat(),
             "assigned_staff_id": trek.assigned_staff_id,
-            "assigned_staff_name": trek.assigned_staff.name if trek.assigned_staff else None
+            "assigned_staff_name": trek.assigned_staff.name if (trek.assigned_staff and not trek.assigned_staff.is_blacklisted) else None
         }
     })
 

@@ -1,0 +1,365 @@
+{% extends "base.html" %}
+{% block title %}Trek Participants | Admin{% endblock %}
+
+{% block content %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap');
+
+    .participants-page {
+        --pine: #1B4332;
+        --moss: #40916C;
+        --moss-light: #74C69D;
+        --terracotta: #BC6C25;
+        --sand: #FEFAE0;
+        --stone: #6B705C;
+        --rust: #9B2226;
+        font-family: 'Inter', sans-serif;
+        color: var(--pine);
+    }
+
+    .participants-page h2,
+    .participants-page h5,
+    .participants-page .card-title {
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .btn-back {
+        border: 1.5px solid #E4E4D8;
+        color: var(--stone);
+        border-radius: 0.7rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        background: transparent;
+        transition: background .15s ease, color .15s ease, border-color .15s ease;
+    }
+
+    .btn-back:hover {
+        background: var(--mist, #F5F4EA);
+        border-color: var(--moss);
+        color: var(--moss);
+    }
+
+    .trek-title {
+        font-weight: 800;
+        color: var(--pine);
+    }
+
+    .trek-subline {
+        color: var(--stone);
+        font-size: 0.9rem;
+    }
+
+    .participants-card {
+        border: none;
+        border-radius: 1.25rem;
+        background: #fff;
+        box-shadow: 0 2px 10px rgba(27, 67, 50, 0.06);
+        overflow: hidden;
+    }
+
+    .participants-card .card-header {
+        background: #fff;
+        border-bottom: 1px solid #EDEDE4;
+        padding: 1rem 1.25rem;
+    }
+
+    .participants-card .card-title {
+        color: var(--pine);
+        font-weight: 700;
+    }
+
+    .count-badge {
+        font-weight: 600;
+        font-size: 0.78rem;
+        padding: 0.4rem 0.85rem;
+    }
+
+    .count-badge.confirmed {
+        background: rgba(64, 145, 108, 0.12);
+        color: var(--moss);
+    }
+
+    .count-badge.cancelled {
+        background: rgba(155, 34, 38, 0.08);
+        color: var(--rust);
+    }
+
+    .participants-table thead th {
+        background: var(--sand);
+        color: var(--stone);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        border: none;
+        font-weight: 600;
+    }
+
+    .participants-table tbody tr {
+        transition: background .15s ease;
+    }
+
+    .participants-table tbody tr:hover {
+        background: #FBFAF2;
+    }
+
+    .participants-table td {
+        border-color: #F1EFE4;
+        vertical-align: middle;
+    }
+
+    .booking-id {
+        color: var(--stone);
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .participant-name {
+        color: var(--pine);
+        font-weight: 700;
+    }
+
+    .booking-status-pill {
+        font-weight: 600;
+        font-size: 0.75rem;
+        padding: 0.35rem 0.7rem;
+    }
+
+    .status-booked {
+        background: rgba(64, 145, 108, 0.12);
+        color: var(--moss);
+    }
+
+    .status-cancelled {
+        background: rgba(155, 34, 38, 0.08);
+        color: var(--rust);
+    }
+
+    .status-completed {
+        background: rgba(169, 214, 229, 0.35);
+        color: #1B6E8C;
+    }
+
+    .cancelled-card .card-header {
+        background: #FBF7F4;
+    }
+
+    .cancelled-card .participant-name {
+        color: var(--stone);
+    }
+
+    .cancelled-card td {
+        color: var(--stone);
+    }
+
+    .empty-state {
+        color: var(--stone);
+    }
+
+    .empty-state i {
+        color: var(--moss);
+        opacity: 0.4;
+    }
+
+    .empty-state.cancelled-empty i {
+        color: var(--rust);
+        opacity: 0.3;
+    }
+
+    .trek-meta-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        background: rgba(64, 145, 108, 0.1);
+        color: var(--moss);
+        padding: 0.3rem 0.75rem;
+        border-radius: 2rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+</style>
+
+<div class="participants-page">
+
+    <div class="mb-4">
+        <a href="{{ url_for('admin.manage_treks') }}" class="btn btn-back mb-3 d-inline-flex align-items-center">
+            <i class="bi bi-arrow-left me-1"></i>Back to Manage Treks
+        </a>
+        <h2 class="trek-title mb-1">{{ trek.name }}
+            <span class="trek-meta-badge ms-2" style="font-size:0.7rem;">
+                <i class="bi bi-shield-check"></i> Admin View
+            </span>
+        </h2>
+        <p class="trek-subline mb-0">
+            {{ trek.location }} &bull; {{ trek.start_date.strftime('%b %d, %Y') }} to {{ trek.end_date.strftime('%b %d, %Y') }}
+            &bull; {{ trek.total_slots - trek.available_slots }} / {{ trek.total_slots }} slots filled
+        </p>
+    </div>
+
+    {% set confirmed_bookings = bookings | selectattr('status.value', 'equalto', 'Booked') | list %}
+    {% set cancelled_bookings = bookings | selectattr('status.value', 'equalto', 'Cancelled') | list %}
+    {% set completed_bookings = bookings | selectattr('status.value', 'equalto', 'Completed') | list %}
+
+    <!-- Confirmed Trekkers -->
+    <div class="card participants-card mb-4">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <h5 class="card-title mb-0"><i class="bi bi-people-fill me-2"></i>Confirmed Trekkers</h5>
+            <span class="badge rounded-pill count-badge confirmed">{{ confirmed_bookings|length }} Active</span>
+        </div>
+        <div class="card-body p-0">
+            {% if confirmed_bookings %}
+            <div class="table-responsive">
+                <table class="table participants-table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="px-4">Booking ID</th>
+                            <th>Participant Name</th>
+                            <th>Email Address</th>
+                            <th>Phone Number</th>
+                            <th>Booking Date</th>
+                            <th>Status</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in confirmed_bookings %}
+                        <tr>
+                            <td class="px-4 booking-id">{{ booking.id }}</td>
+                            <td>
+                                <div class="participant-name">{{ booking.user.name }}</div>
+                            </td>
+                            <td>{{ booking.user.email }}</td>
+                            <td>{{ booking.user.phone or '-' }}</td>
+                            <td>
+                                <div>{{ booking.booking_date.strftime('%b %d, %Y') }}</div>
+                                <small class="text-muted">{{ booking.booking_date.strftime('%I:%M %p') }}</small>
+                            </td>
+                            <td>
+                                <span class="badge rounded-pill booking-status-pill status-booked">
+                                    <i class="bi bi-check-circle-fill me-1"></i>{{ booking.status.value }}
+                                </span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <form action="{{ url_for('admin.remove_participant', booking_id=booking.id) }}"
+                                    method="POST" class="d-inline"
+                                    onsubmit="return confirm('Remove {{ booking.user.name }} from this trek?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                        style="border-radius:0.5rem;font-weight:500;">
+                                        <i class="bi bi-person-x-fill me-1"></i>Remove
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5 empty-state">
+                <i class="bi bi-person-slash fs-1 mb-3 d-block"></i>
+                <p class="mb-0 fw-semibold">No confirmed bookings for this trek yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if completed_bookings %}
+    <!-- Completed Trekkers -->
+    <div class="card participants-card mb-4">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <h5 class="card-title mb-0"><i class="bi bi-flag-fill me-2"></i>Completed Trekkers</h5>
+            <span class="badge rounded-pill count-badge" style="background:rgba(169,214,229,0.35);color:#1B6E8C;">{{ completed_bookings|length }} Completed</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table participants-table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="px-4">Booking ID</th>
+                            <th>Participant Name</th>
+                            <th>Email Address</th>
+                            <th>Phone Number</th>
+                            <th>Booking Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in completed_bookings %}
+                        <tr>
+                            <td class="px-4 booking-id">{{ booking.id }}</td>
+                            <td>
+                                <div class="participant-name">{{ booking.user.name }}</div>
+                            </td>
+                            <td>{{ booking.user.email }}</td>
+                            <td>{{ booking.user.phone or '-' }}</td>
+                            <td>
+                                <div>{{ booking.booking_date.strftime('%b %d, %Y') }}</div>
+                                <small class="text-muted">{{ booking.booking_date.strftime('%I:%M %p') }}</small>
+                            </td>
+                            <td>
+                                <span class="badge rounded-pill booking-status-pill status-completed">
+                                    <i class="bi bi-check2-all me-1"></i>{{ booking.status.value }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Cancelled Bookings -->
+    <div class="card participants-card cancelled-card">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <h5 class="card-title mb-0"><i class="bi bi-person-x-fill me-2"></i>Cancelled Bookings</h5>
+            <span class="badge rounded-pill count-badge cancelled">{{ cancelled_bookings|length }} Cancelled</span>
+        </div>
+        <div class="card-body p-0">
+            {% if cancelled_bookings %}
+            <div class="table-responsive">
+                <table class="table participants-table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="px-4">Booking ID</th>
+                            <th>Participant Name</th>
+                            <th>Email Address</th>
+                            <th>Phone Number</th>
+                            <th>Booking Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in cancelled_bookings %}
+                        <tr>
+                            <td class="px-4 booking-id">{{ booking.id }}</td>
+                            <td>
+                                <div class="participant-name">{{ booking.user.name }}</div>
+                            </td>
+                            <td>{{ booking.user.email }}</td>
+                            <td>{{ booking.user.phone or '-' }}</td>
+                            <td>
+                                <div>{{ booking.booking_date.strftime('%b %d, %Y') }}</div>
+                                <small class="text-muted">{{ booking.booking_date.strftime('%I:%M %p') }}</small>
+                            </td>
+                            <td>
+                                <span class="badge rounded-pill booking-status-pill status-cancelled">
+                                    <i class="bi bi-x-circle-fill me-1"></i>{{ booking.status.value }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4 empty-state cancelled-empty">
+                <i class="bi bi-emoji-smile fs-2 mb-2 d-block"></i>
+                <p class="mb-0 small fw-medium">No cancellations for this trek.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -68,6 +68,14 @@ def blacklist_user(user_id):
         return redirect(request.referrer or url_for("admin.dashboard"))
 
     user.status = UserStatusEnum.BLACKLISTED
+
+    # Cancel all active bookings if user is blacklisted
+    active_bookings = Booking.query.filter_by(user_id=user.id, status=BookingStatusEnum.BOOKED).all()
+    for booking in active_bookings:
+        booking.status = BookingStatusEnum.CANCELLED
+        if booking.trek:
+            booking.trek.available_slots += 1
+
     db.session.commit()
     flash(f"{user.name} has been blacklisted.", "warning")
     return redirect(request.referrer or url_for("admin.dashboard"))
@@ -259,6 +267,19 @@ def delete_trek(trek_id):
     return redirect(url_for("admin.manage_treks"))
 
 
+@admin_bp.route("/treks/<int:trek_id>/participants", methods=["GET"])
+@login_required
+@role_required(RoleEnum.ADMIN)
+def view_trek_participants(trek_id):
+    trek = Trek.query.get_or_404(trek_id)
+    bookings = Booking.query.filter_by(trek_id=trek.id).order_by(Booking.booking_date.desc()).all()
+    return render_template(
+        "admin/participants.html",
+        trek=trek,
+        bookings=bookings
+    )
+
+
 @admin_bp.route("/users", methods=["GET"])
 @login_required
 @role_required(RoleEnum.ADMIN)
@@ -308,14 +329,22 @@ def toggle_user_status(user_id):
     if user.role == RoleEnum.ADMIN:
         flash("Cannot modify admin status.", "danger")
         return redirect(url_for("admin.manage_users"))
-        
+
     if user.status == UserStatusEnum.ACTIVE:
         user.status = UserStatusEnum.BLACKLISTED
+
+        # Cancel all active bookings if user is blacklisted
+        active_bookings = Booking.query.filter_by(user_id=user.id, status=BookingStatusEnum.BOOKED).all()
+        for booking in active_bookings:
+            booking.status = BookingStatusEnum.CANCELLED
+            if booking.trek:
+                booking.trek.available_slots += 1
+
         flash(f"{user.name} has been blacklisted.", "warning")
     else:
         user.status = UserStatusEnum.ACTIVE
         flash(f"{user.name} is now active.", "success")
-        
+
     db.session.commit()
     return redirect(url_for("admin.manage_users"))
 
@@ -374,3 +403,22 @@ def view_bookings():
         status_filter=status_filter,
         statuses=BookingStatusEnum
     )
+
+
+@admin_bp.route("/bookings/<int:booking_id>/remove", methods=["POST"])
+@login_required
+@role_required(RoleEnum.ADMIN)
+def remove_participant(booking_id):
+    booking = Booking.query.get_or_404(booking_id)
+    
+    if booking.status != BookingStatusEnum.BOOKED:
+        flash("Only active bookings can be removed.", "danger")
+        return redirect(request.referrer or url_for("admin.view_bookings"))
+    
+    booking.status = BookingStatusEnum.CANCELLED
+    if booking.trek:
+        booking.trek.available_slots += 1
+    
+    db.session.commit()
+    flash(f"Trekker '{booking.user.name}' has been removed from trek '{booking.trek.name}'.", "success")
+    return redirect(request.referrer or url_for("admin.view_bookings"))

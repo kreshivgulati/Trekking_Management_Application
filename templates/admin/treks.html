@@ -397,14 +397,14 @@
                             {{ trek.start_date.strftime('%b %d') }} – {{ trek.end_date.strftime('%b %d, %Y') }}
                         </td>
                         <td>
-                            {% if trek.assigned_staff %}
+                            {% if trek.assigned_staff and not trek.assigned_staff.is_blacklisted %}
                             <div class="staff-chip">
 
                                 <span>{{ trek.assigned_staff.name }}</span>
                             </div>
                             {% else %}
-                            <span class="staff-unassigned"><i
-                                    class="bi bi-exclamation-circle me-1"></i>Unassigned</span>
+                            <span class="staff-unassigned">Not
+                                assigned</span>
                             {% endif %}
                         </td>
                         <td>
@@ -426,6 +426,10 @@
                             </span>
                         </td>
                         <td class="text-end px-4">
+                            <a href="{{ url_for('admin.view_trek_participants', trek_id=trek.id) }}"
+                                class="icon-btn me-1" title="View Trekkers" style="color: var(--moss);">
+                                <i class="bi bi-people-fill"></i>
+                            </a>
                             <button class="icon-btn edit me-1" data-bs-toggle="modal"
                                 data-bs-target="#editTrekModal-{{ trek.id }}" title="Edit Trek">
                                 <i class="bi bi-pencil-square"></i>
@@ -521,7 +525,7 @@
                     <div class="mb-3">
                         <label class="form-label">Assign Staff Guide</label>
                         <select name="assigned_staff_id" class="form-select rounded-3">
-                            <option value="">-- No Guide Assigned --</option>
+                            <option value=""> No Guide Assigned </option>
                             {% for staff in active_staff %}
                             <option value="{{ staff.id }}" {% if trek.assigned_staff_id==staff.id %}selected{% endif %}>
                                 {{ staff.name }} ({{ staff.email }})</option>
