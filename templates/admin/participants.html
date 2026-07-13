@@ -1,5 +1,10 @@
 {% extends "base.html" %}
-{% block title %}Trek Participants | Admin{% endblock %}
+
+{% block title %}
+Trek Participants | Admin
+{% endblock %}
+
+{% block body_class %}participants-page{% endblock %}
 
 {% block content %}
 <style>
@@ -190,7 +195,8 @@
             </span>
         </h2>
         <p class="trek-subline mb-0">
-            {{ trek.location }} &bull; {{ trek.start_date.strftime('%b %d, %Y') }} to {{ trek.end_date.strftime('%b %d, %Y') }}
+            {{ trek.location }} &bull; {{ trek.start_date.strftime('%b %d, %Y') }} to {{ trek.end_date.strftime('%b %d,
+            %Y') }}
             &bull; {{ trek.total_slots - trek.available_slots }} / {{ trek.total_slots }} slots filled
         </p>
     </div>
@@ -267,7 +273,8 @@
     <div class="card participants-card mb-4">
         <div class="card-header d-flex align-items-center justify-content-between">
             <h5 class="card-title mb-0"><i class="bi bi-flag-fill me-2"></i>Completed Trekkers</h5>
-            <span class="badge rounded-pill count-badge" style="background:rgba(169,214,229,0.35);color:#1B6E8C;">{{ completed_bookings|length }} Completed</span>
+            <span class="badge rounded-pill count-badge" style="background:rgba(169,214,229,0.35);color:#1B6E8C;">{{
+                completed_bookings|length }} Completed</span>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">

@@ -10,7 +10,6 @@ from decorators import role_required
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
-
 @admin_bp.route("/dashboard")
 @login_required
 @role_required(RoleEnum.ADMIN)

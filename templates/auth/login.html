@@ -4,16 +4,16 @@
 {% block content %}
 <style>
     .auth-wrap {
-        min-height: calc(100vh - 220px);
+        min-height: calc(100vh - 140px);
         display: flex;
         align-items: center;
         flex-direction: column;
         justify-content: center;
         gap: 1.25rem;
         padding: 1.5rem 0;
+        background-color: var(--mist);
     }
 
-    /* Go Back button (adapted from Uiverse.io by AKAspidey01) */
     .go-back-btn {
         background: #fff;
         width: 12rem;
@@ -160,7 +160,7 @@
 
     .btn-login:hover {
         background: var(--pine);
-        color: #fff;
+        color: #000;
         transform: translateY(-1px);
     }
 
@@ -211,12 +211,11 @@
         color: #fff;
     }
 </style>
-
-<div class="row justify-content-center w-100">
-    <div class="col-md-6 col-lg-5">
-        <div class="card auth-card">
-
+<div class="auth-wrap">
+    <div class="row justify-content-center w-100">
+        <div class="col-md-6 col-lg-5">
             <div class="card auth-card">
+
                 <div class="auth-banner">
                     <i class="bi bi-compass-fill"></i>
                     <h3>Welcome Back</h3>
@@ -258,5 +257,6 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 {% endblock %}

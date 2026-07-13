@@ -1,5 +1,10 @@
 {% extends "base.html" %}
-{% block title %}All Bookings History | Admin{% endblock %}
+
+{% block title %}
+All Bookings History | Admin
+{% endblock %}
+
+{% block body_class %}bookings-page{% endblock %}
 
 {% block content %}
 <style>
@@ -170,7 +175,6 @@
         opacity: 0.4;
     }
 </style>
-
 <div class="admin-header">
     <h2 class="mb-1"><i class="bi bi-journal-text me-2"></i>All Bookings Log</h2>
     <p>Review all historical bookings made by trekkers, including active and cancelled registrations.</p>
@@ -237,7 +241,8 @@
                         <td class="px-4 booking-id">{{ booking.id }}</td>
                         <td>
                             <div class="trek-name">{{ booking.trek.name }}</div>
-                            <div class="trek-location"><i class="bi bi-geo-alt-fill me-1"></i>{{ booking.trek.location
+                            <div class="trek-location"><i class="bi bi-geo-alt-fill me-1"></i>{{
+                                booking.trek.location
                                 }}</div>
                         </td>
                         <td>
@@ -254,7 +259,8 @@
                             {{ booking.trek.start_date.strftime('%b %d') }} – {{ booking.trek.end_date.strftime('%d,
                             %Y') }}
                             {% else %}
-                            {{ booking.trek.start_date.strftime('%b %d') }} – {{ booking.trek.end_date.strftime('%b %d,
+                            {{ booking.trek.start_date.strftime('%b %d') }} – {{ booking.trek.end_date.strftime('%b
+                            %d,
                             %Y') }}
                             {% endif %}
                         </td>
@@ -266,8 +272,11 @@
                         </td>
                         <td class="text-end pe-4">
                             {% if booking.status.value == 'Booked' %}
-                            <form action="{{ url_for('admin.remove_participant', booking_id=booking.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Remove {{ booking.user.name }} from {{ booking.trek.name }}?');">
-                                <button type="submit" class="btn btn-sm btn-outline-danger" style="border-radius:0.5rem;font-weight:500;">
+                            <form action="{{ url_for('admin.remove_participant', booking_id=booking.id) }}"
+                                method="POST" class="d-inline"
+                                onsubmit="return confirm('Remove {{ booking.user.name }} from {{ booking.trek.name }}?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                    style="border-radius:0.5rem;font-weight:500;">
                                     <i class="bi bi-person-x-fill me-1"></i>Remove
                                 </button>
                             </form>
