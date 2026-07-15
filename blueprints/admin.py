@@ -57,29 +57,6 @@ def approve_staff(user_id):
     return redirect(request.referrer or url_for("admin.dashboard"))
 
 
-@admin_bp.route("/blacklist/<int:user_id>", methods=["POST"])
-@login_required
-@role_required(RoleEnum.ADMIN)
-def blacklist_user(user_id):
-    user = User.query.get_or_404(user_id)
-    if user.role == RoleEnum.ADMIN:
-        flash("You cannot blacklist an admin account.", "danger")
-        return redirect(request.referrer or url_for("admin.dashboard"))
-
-    user.status = UserStatusEnum.BLACKLISTED
-
-    # Cancel all active bookings if user is blacklisted
-    active_bookings = Booking.query.filter_by(user_id=user.id, status=BookingStatusEnum.BOOKED).all()
-    for booking in active_bookings:
-        booking.status = BookingStatusEnum.CANCELLED
-        if booking.trek:
-            booking.trek.available_slots += 1
-
-    db.session.commit()
-    flash(f"{user.name} has been blacklisted.", "warning")
-    return redirect(request.referrer or url_for("admin.dashboard"))
-
-
 @admin_bp.route("/treks", methods=["GET"])
 @login_required
 @role_required(RoleEnum.ADMIN)
@@ -345,6 +322,7 @@ def toggle_user_status(user_id):
         flash(f"{user.name} is now active.", "success")
 
     db.session.commit()
+
     return redirect(url_for("admin.manage_users"))
 
 

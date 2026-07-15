@@ -484,11 +484,20 @@ admin-dashboard-page
                                             </button>
                                         </form>
                                         <form method="POST"
-                                            action="{{ url_for('admin.blacklist_user', user_id=staff.id) }}"
+                                            action="{{ url_for('admin.toggle_user_status', user_id=staff.id) }}"
                                             class="d-inline">
-                                            <button type="submit" class="btn btn-sm btn-blacklist px-3 py-1">
+
+                                            <button type="submit"
+                                                class="btn btn-sm {% if staff.status.value == 'active' %}btn-blacklist{% else %}btn-activate{% endif %} px-3 py-1">
+
+                                                {% if staff.status.value == 'active' %}
                                                 <i class="bi bi-x-circle me-1"></i>Blacklist
+                                                {% else %}
+                                                <i class="bi bi-check-circle me-1"></i>Activate
+                                                {% endif %}
+
                                             </button>
+
                                         </form>
                                     </td>
                                 </tr>
